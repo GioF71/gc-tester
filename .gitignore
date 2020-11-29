@@ -1,0 +1,11 @@
+/.project
+/.classpath
+/.settings
+/target
+/**/*.class
+/gc.log*
+/webpack.config.js
+/webpack.generated.js
+/package.json
+/package-lock.json
+/node_modules

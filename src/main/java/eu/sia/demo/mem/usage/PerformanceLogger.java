@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import eu.sia.demo.mem.usage.core.Collector;
 import eu.sia.demo.mem.usage.core.PerformanceMetric;
 import eu.sia.demo.mem.usage.core.PerformanceMetricExtractor;
-import eu.sia.demo.mem.usage.util.NanotimeConverter;
 
 @Component
 public class PerformanceLogger {
@@ -22,9 +21,6 @@ public class PerformanceLogger {
 	
 	@Autowired
 	private Collector collector;
-	
-	@Autowired
-	private NanotimeConverter nanotimeConverter;
 
 	private final Logger logger = Logger.getLogger(PerformanceLogger.class.getCanonicalName());
 	
@@ -48,10 +44,7 @@ public class PerformanceLogger {
 			logMetric(performanceMetric);
 			PerformanceMetric performanceMetric10Sec = performanceMetricExtractor.get("Ten sec", 10, TimeUnit.SECONDS);
 			logMetric(performanceMetric10Sec);
-			long purgeStart = System.nanoTime();
 			collector.purgeBefore(10, TimeUnit.SECONDS);
-			long purgeElapsed = System.nanoTime() - purgeStart;
-			logger.log(Level.INFO, String.format("Purge took [%.3f] millisec", nanotimeConverter.nanoToMilli(purgeElapsed)));
 		}
 
 		private void logMetric(PerformanceMetric performanceMetric) {

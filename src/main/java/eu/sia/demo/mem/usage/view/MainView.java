@@ -2,7 +2,6 @@ package eu.sia.demo.mem.usage.view;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 
@@ -15,9 +14,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
-import eu.sia.demo.mem.usage.core.Collector;
-import eu.sia.demo.mem.usage.core.PerformanceMetricExtractor;
-import eu.sia.demo.mem.usage.util.NanotimeConverter;
 import eu.sia.demo.mem.usage.view.behaviour.CacheSizeLayoutCreator;
 import eu.sia.demo.mem.usage.view.behaviour.KeyAddLayoutCreator;
 import eu.sia.demo.mem.usage.view.behaviour.WorkerCreationLayoutCreator;
@@ -36,18 +32,7 @@ public class MainView extends VerticalLayout {
 	@Autowired
 	private WorkerCreationLayoutCreator workerCreationLayoutCreator;
 	
-	@Autowired
-	private PerformanceMetricExtractor performanceMetricExtractor;
-	
-	@Autowired
-	private Collector collector;
-	
-	@Autowired
-	private NanotimeConverter nanotimeConverter;
-	
 	private final List<Refreshable> refreshableList = new ArrayList<>();
-	
-	private final Logger logger = Logger.getLogger(MainView.class.getCanonicalName());
 		
 	@PostConstruct
 	private void postConstruct() {
