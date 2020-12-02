@@ -1,9 +1,9 @@
 package eu.sia.demo.mem.usage.core.impl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ public class CollectorImpl implements Collector {
 	@Autowired
 	private StatisticEntryCreator creator;
 
-	private final TreeSet<StatisticEntry> entryList = new TreeSet<>();
+	private final List<StatisticEntry> entryList = new ArrayList<>(2000000);
 
 	@Override
 	public void add(StatisticEntry entry) {
@@ -27,19 +27,38 @@ public class CollectorImpl implements Collector {
 			entryList.add(entry);
 		}
 	}
+	
+	private final Comparator<StatisticEntry> comparator = new Comparator<StatisticEntry>() {
+
+		@Override
+		public int compare(StatisticEntry left, StatisticEntry right) {
+			long l = left.getCreationNanotime();
+			long r = right.getCreationNanotime();
+			if (l == r) {
+				return 0;
+			} else if (l < r) {
+				return -1;
+			}
+			return 1;
+		}
+	};
 
 	@Override
-	public List<StatisticEntry> getLastEntries(int timeDelta, TimeUnit timeunit) {
-		long lowest = System.nanoTime();
-		lowest -= timeunit.toMicros(timeDelta) * 1000;
+	public List<StatisticEntry> getLastEntries(int timeDelta, TimeUnit timeunit, ExtractAction clean) {
+		long lowest = getLowest(timeDelta, timeunit);
 		List<StatisticEntry> list = new ArrayList<>();
 		synchronized(entryList) {
-			Iterator<StatisticEntry> it = entryList.descendingIterator();
-			while (it.hasNext()) {
-				StatisticEntry current = it.next();
-				if (current.getCreationNanotime() >= lowest) {
+			entryList.sort(comparator);
+			boolean keepAdding = true;
+			for (int i = entryList.size() - 1; keepAdding && i >= 0; --i) {
+				StatisticEntry current = entryList.get(i);
+				keepAdding = current.getCreationNanotime() >= lowest;
+				if (keepAdding) {
 					list.add(current);
 				}
+			}
+			if (ExtractAction.CLEAN.equals(clean)) {
+				entryList.clear();
 			}
 		}
 		return list;
@@ -47,14 +66,14 @@ public class CollectorImpl implements Collector {
 
 	@Override
 	public void purgeBefore(int timeDelta, TimeUnit timeunit) {
-		long lowest = System.nanoTime();
-		lowest -= timeunit.toMicros(timeDelta) * 1000;
+		long lowest = getLowest(timeDelta, timeunit);
 		purgeBefore(lowest);
 	}
 
 	@Override
 	public void purgeBefore(long nanotime) {
 		synchronized(entryList) {
+			entryList.sort(comparator);
 			Iterator<StatisticEntry> it = entryList.iterator();
 			boolean found = false;
 			while (!found && it.hasNext()) {
@@ -78,5 +97,11 @@ public class CollectorImpl implements Collector {
 	@Override
 	public StatisticEntryCreator getEntryCreator() {
 		return creator;
+	}
+
+	private long getLowest(int timeDelta, TimeUnit timeunit) {
+		long lowest = System.nanoTime();
+		lowest -= timeunit.toMicros(timeDelta) * 1000;
+		return lowest;
 	}
 }

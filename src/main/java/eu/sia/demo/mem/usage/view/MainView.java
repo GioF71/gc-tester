@@ -2,6 +2,7 @@ package eu.sia.demo.mem.usage.view;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -16,6 +17,7 @@ import com.vaadin.flow.router.Route;
 
 import eu.sia.demo.mem.usage.view.behaviour.CacheSizeLayoutCreator;
 import eu.sia.demo.mem.usage.view.behaviour.KeyAddLayoutCreator;
+import eu.sia.demo.mem.usage.view.behaviour.StatisticLayoutCreator;
 import eu.sia.demo.mem.usage.view.behaviour.WorkerCreationLayoutCreator;
 
 @Route
@@ -32,13 +34,17 @@ public class MainView extends VerticalLayout {
 	@Autowired
 	private WorkerCreationLayoutCreator workerCreationLayoutCreator;
 	
+	@Autowired
+	private StatisticLayoutCreator statisticLayoutCreator;
+	
 	private final List<Refreshable> refreshableList = new ArrayList<>();
 		
 	@PostConstruct
 	private void postConstruct() {
 		this.add(buildDataLayout());
 		this.add(buildCreateWorkersLayout());
-		UI.getCurrent().setPollInterval(1000);
+		this.add(buildStatLayout());
+		UI.getCurrent().setPollInterval(500);
 		UI.getCurrent().addPollListener(pollListener);
 	}
 	
@@ -51,19 +57,6 @@ public class MainView extends VerticalLayout {
 			for (Refreshable refreshable : refreshableList) {
 				refreshable.refresh();
 			}
-//			PerformanceMetric performanceMetric = performanceMetricExtractor.get("One sec", 1, TimeUnit.SECONDS);
-//			if (performanceMetric.getCount() > 0) {
-//				logger.log(Level.INFO, String.format("Metric [%s] Count [%d] Avg [%.3f] Max [%.3f] Min [%.3f]", 
-//					performanceMetric.getName(), 
-//					performanceMetric.getCount(),
-//					performanceMetric.getElapsedAvg(),
-//					performanceMetric.getElapsedMax(),
-//					performanceMetric.getElapsedMin()));
-//			}
-//			long purgeStart = System.nanoTime();
-//			collector.purgeBefore(1, TimeUnit.SECONDS);
-//			long purgeElapsed = System.nanoTime() - purgeStart;
-//			logger.log(Level.INFO, String.format("Purge took [%.3f] millisec", nanotimeConverter.nanoToMilli(purgeElapsed)));
 		}
 	};
 
@@ -80,6 +73,15 @@ public class MainView extends VerticalLayout {
 		HorizontalLayout hLayout = new HorizontalLayout();
 		hLayout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
 		RefreshableComponent rc = keyContainerActionContainer.create();
+		hLayout.add(rc.getComponent());
+		refreshableList.add(rc.getRefreshable());
+		return hLayout;
+	}
+	
+	private HorizontalLayout buildStatLayout() {
+		HorizontalLayout hLayout = new HorizontalLayout();
+		hLayout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
+		RefreshableComponent rc = statisticLayoutCreator.create(5, TimeUnit.SECONDS);
 		hLayout.add(rc.getComponent());
 		refreshableList.add(rc.getRefreshable());
 		return hLayout;

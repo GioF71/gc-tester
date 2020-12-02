@@ -1,13 +1,10 @@
 package eu.sia.demo.mem.usage.core.impl;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import eu.sia.demo.mem.usage.core.Collector;
 import eu.sia.demo.mem.usage.core.PerformanceMetric;
 import eu.sia.demo.mem.usage.core.PerformanceMetricExtractor;
 import eu.sia.demo.mem.usage.core.StatisticEntry;
@@ -15,9 +12,6 @@ import eu.sia.demo.mem.usage.core.StatisticEntry;
 @Component
 public class PerformanceMetricExtractorImpl implements PerformanceMetricExtractor {
 
-	@Autowired
-	private Collector collector;
-	
 	class Metric implements PerformanceMetric {
 
 		private final String name;
@@ -59,10 +53,9 @@ public class PerformanceMetricExtractorImpl implements PerformanceMetricExtracto
 			return elapsedAvg;
 		}
 	}
-	
+
 	@Override
-	public PerformanceMetric get(String name, int timeDelta, TimeUnit timeunit) {
-		List<StatisticEntry> list = collector.getLastEntries(timeDelta, timeunit);
+	public PerformanceMetric get(String name, List<StatisticEntry> list) {
 		Float avg = null, min = null, max = null;
 		Float totalElapsed = 0.0f;
 		int count = 0;

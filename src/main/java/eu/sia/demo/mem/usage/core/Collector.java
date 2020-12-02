@@ -4,9 +4,15 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public interface Collector {
+	
+	public enum ExtractAction {
+		CLEAN,
+		NONE
+	}
+	
 	StatisticEntryCreator getEntryCreator();
 	int size();
-	List<StatisticEntry> getLastEntries(int timeDelta, TimeUnit timeunit);
+	List<StatisticEntry> getLastEntries(int timeDelta, TimeUnit timeunit, ExtractAction clean);
 	void purgeBefore(long nanotime);
 	void purgeBefore(int timeDelta, TimeUnit timeunit);
 	void add(StatisticEntry entry);

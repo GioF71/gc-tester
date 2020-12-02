@@ -1,7 +1,7 @@
 package eu.sia.demo.mem.usage.core;
 
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 public interface PerformanceMetricExtractor {
-	PerformanceMetric get(String name, int timeDelta, TimeUnit timeunit);
+	PerformanceMetric get(String name, List<StatisticEntry> list);
 }
