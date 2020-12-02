@@ -1,6 +1,8 @@
 package eu.sia.demo.mem.usage.core.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -22,6 +24,17 @@ public class KeyContainerImpl implements KeyContainer {
 		synchronized(keyList) {
 			return keyList.size();
 		}
+	}
+
+	@Override
+	public void put(Collection<String> keyCollection) {
+		executorService.submit(() -> {
+			for (String current : Optional.ofNullable(keyCollection).orElse(Collections.emptyList())) {
+				synchronized(keyList) {
+					keyList.add(current);
+				}
+			}
+		});
 	}
 
 	@Override

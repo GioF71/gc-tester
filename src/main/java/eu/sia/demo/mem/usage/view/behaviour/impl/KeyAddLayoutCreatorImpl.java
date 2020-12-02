@@ -1,5 +1,7 @@
 package eu.sia.demo.mem.usage.view.behaviour.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -100,9 +102,11 @@ public class KeyAddLayoutCreatorImpl implements KeyAddLayoutCreator {
 					.filter(s -> s.length() > 0)
 					.map(textToIntegerOrZero.getFunction())
 					.orElse(0);
+				List<String> newKeys = new ArrayList<>();
 				for (int i = 0; i < howMany; ++i) {
-					keyContainer.put(UUID.randomUUID().toString());
+					newKeys.add(UUID.randomUUID().toString());
 				}
+				keyContainer.put(newKeys);
 			}
 		};
 	}
