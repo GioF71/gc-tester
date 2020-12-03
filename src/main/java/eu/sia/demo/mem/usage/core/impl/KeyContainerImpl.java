@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 import org.springframework.stereotype.Component;
 
@@ -25,33 +26,36 @@ public class KeyContainerImpl implements KeyContainer {
 			return keyList.size();
 		}
 	}
+	
+	private final Consumer<String> onKey = new Consumer<String>() {
+
+		@Override
+		public void accept(String key) {
+			synchronized(keyList) {
+				keyList.add(key);
+			}
+		}
+	};
 
 	@Override
 	public void put(Collection<String> keyCollection) {
 		executorService.submit(() -> {
 			for (String current : Optional.ofNullable(keyCollection).orElse(Collections.emptyList())) {
-				synchronized(keyList) {
-					keyList.add(current);
-				}
+				onKey.accept(current);
 			}
 		});
 	}
 
 	@Override
 	public void put(String key) {
-		executorService.submit(() -> {
-			synchronized(keyList) {
-				keyList.add(key);
-			}
-		});
+		executorService.submit(() -> onKey.accept(key));
 	}
 
 	@Override
 	public String getRandomKey() {
 		synchronized(keyList) {
 			int sz = keyList.size();
-			return Optional.of(keyList)
-				.map(List::size)
+			return Optional.of(sz)
 				.filter(s -> s > 0)
 				.map(s -> new Random().nextInt(sz))
 				.map(r -> keyList.get(r))
