@@ -23,7 +23,7 @@ public class CollectorTest {
 				keepUntilTimestamp = entry.getCreationNanotime();
 			}
 		}
-		c.purgeBefore(keepUntilTimestamp);
+		c.purgeOlder(keepUntilTimestamp);
 		
 		int residualSize = c.size();
 		Assert.assertTrue(residualSize == (statCount - keepUntil));

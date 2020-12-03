@@ -10,16 +10,16 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 
-import eu.sia.demo.mem.usage.core.CoreCache;
+import eu.sia.demo.mem.usage.core.DisplayBuffer;
 import eu.sia.demo.mem.usage.view.Refreshable;
 import eu.sia.demo.mem.usage.view.RefreshableComponent;
 import eu.sia.demo.mem.usage.view.behaviour.CacheSizeLayoutCreator;
 
 @Component
 public class CacheSizeLayoutCreatorImpl implements CacheSizeLayoutCreator {
-
+	
 	@Autowired
-	private CoreCache coreCache;
+	private DisplayBuffer displayBuffer;
 	
 	@Override
 	public RefreshableComponent create() {
@@ -65,7 +65,7 @@ public class CacheSizeLayoutCreatorImpl implements CacheSizeLayoutCreator {
 	
 	private void refreshCacheSize(TextField coreCacheSize) {
 		coreCacheSize.setReadOnly(false);
-		coreCacheSize.setValue(Integer.valueOf(coreCache.size()).toString());
+		coreCacheSize.setValue(Integer.valueOf(displayBuffer.getCacheSize()).toString());
 		coreCacheSize.setReadOnly(true);
 	}
 }

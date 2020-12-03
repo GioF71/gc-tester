@@ -8,15 +8,14 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import eu.sia.demo.mem.usage.core.Collector;
-import eu.sia.demo.mem.usage.core.PerformanceMetric;
-import eu.sia.demo.mem.usage.core.PerformanceMetricExtractor;
-import eu.sia.demo.mem.usage.core.MetricEntry;
 import eu.sia.demo.mem.usage.core.Collector.ExtractAction;
+import eu.sia.demo.mem.usage.core.MetricEntry;
+import eu.sia.demo.mem.usage.core.PerformanceMetricExtractor;
+import eu.sia.demo.mem.usage.core.PerformanceStatistic;
 
-@Component
+//@Component
 public class PerformanceLogger {
 	
 	@Autowired
@@ -35,6 +34,7 @@ public class PerformanceLogger {
 				iteration();
 				try {
 					Thread.sleep(1000);
+					Thread.yield();
 				} catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				}
@@ -44,12 +44,11 @@ public class PerformanceLogger {
 
 		private void iteration() {
 			List<MetricEntry> list = collector.getLastEntries(1, TimeUnit.SECONDS, ExtractAction.NONE);
-			PerformanceMetric performanceMetric = performanceMetricExtractor.get("One sec", list);
-			logMetric(performanceMetric);
-			collector.purgeBefore(10, TimeUnit.SECONDS);
+			PerformanceStatistic performanceStatistic = performanceMetricExtractor.calculate("One sec", list);
+			logMetric(performanceStatistic);
 		}
 
-		private void logMetric(PerformanceMetric performanceMetric) {
+		private void logMetric(PerformanceStatistic performanceMetric) {
 			if (performanceMetric.getCount() > 0) {
 				logger.log(Level.INFO, String.format("Metric [%s] Count [%d] Avg [%.3f] Max [%.3f] Min [%.3f]", 
 					performanceMetric.getName(), 

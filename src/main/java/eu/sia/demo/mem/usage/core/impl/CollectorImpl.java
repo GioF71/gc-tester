@@ -1,6 +1,7 @@
 package eu.sia.demo.mem.usage.core.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -12,19 +13,41 @@ import org.springframework.stereotype.Component;
 import eu.sia.demo.mem.usage.core.Collector;
 import eu.sia.demo.mem.usage.core.MetricEntry;
 import eu.sia.demo.mem.usage.core.StatisticEntryCreator;
+import eu.sia.demo.mem.usage.util.TimeUtil;
 
 @Component
 public class CollectorImpl implements Collector {
 	
 	@Autowired
 	private StatisticEntryCreator creator;
+	
+	@Autowired
+	private TimeUtil timeUtil;
 
 	private final List<MetricEntry> entryList = new ArrayList<>(2000000);
+	private Long lastNanoTime = null;
+	
+	private boolean canEnqueue(MetricEntry entry) {
+		return lastNanoTime == null || entry.getCreationNanotime() >= lastNanoTime;
+	}
 
 	@Override
 	public void add(MetricEntry entry) {
 		synchronized(entryList) {
-			entryList.add(entry);
+			if (canEnqueue(entry)) {
+				entryList.add(entry);
+				lastNanoTime = entry.getCreationNanotime();
+			} else {
+				// find position
+				int foundIndex = -1;
+				for (int i = entryList.size() - 1; foundIndex == -1 && i >= 0; --i) {
+					MetricEntry current = entryList.get(i);
+					if (current.getCreationNanotime() >= entry.getCreationNanotime()) {
+						foundIndex = i;
+					}
+				}
+				entryList.add(foundIndex, entry);
+			}
 		}
 	}
 	
@@ -44,11 +67,11 @@ public class CollectorImpl implements Collector {
 	};
 
 	@Override
-	public List<MetricEntry> getLastEntries(int timeDelta, TimeUnit timeunit, ExtractAction clean) {
-		long lowest = getLowest(timeDelta, timeunit);
+	public List<MetricEntry> getLastEntries(int timeDelta, TimeUnit timeUnit, ExtractAction clean) {
+		long lowest = timeUtil.getLowest(timeDelta, timeUnit);
 		List<MetricEntry> list = new ArrayList<>();
 		synchronized(entryList) {
-			entryList.sort(comparator);
+			//entryList.sort(comparator);
 			boolean keepAdding = true;
 			for (int i = entryList.size() - 1; keepAdding && i >= 0; --i) {
 				MetricEntry current = entryList.get(i);
@@ -61,17 +84,18 @@ public class CollectorImpl implements Collector {
 				entryList.clear();
 			}
 		}
+		Collections.reverse(list);
 		return list;
 	}
 
 	@Override
-	public void purgeBefore(int timeDelta, TimeUnit timeunit) {
-		long lowest = getLowest(timeDelta, timeunit);
-		purgeBefore(lowest);
+	public void purgeBefore(int timeDelta, TimeUnit timeUnit) {
+		long lowest = timeUtil.getLowest(timeDelta, timeUnit);
+		purgeOlder(lowest);
 	}
 
 	@Override
-	public void purgeBefore(long nanotime) {
+	public void purgeOlder(long nanotime) {
 		synchronized(entryList) {
 			entryList.sort(comparator);
 			Iterator<MetricEntry> it = entryList.iterator();
@@ -97,11 +121,5 @@ public class CollectorImpl implements Collector {
 	@Override
 	public StatisticEntryCreator getEntryCreator() {
 		return creator;
-	}
-
-	private long getLowest(int timeDelta, TimeUnit timeunit) {
-		long lowest = System.nanoTime();
-		lowest -= timeunit.toMicros(timeDelta) * 1000;
-		return lowest;
 	}
 }

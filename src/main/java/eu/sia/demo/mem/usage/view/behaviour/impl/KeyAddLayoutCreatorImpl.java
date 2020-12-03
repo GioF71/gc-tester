@@ -16,6 +16,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 
+import eu.sia.demo.mem.usage.core.DisplayBuffer;
 import eu.sia.demo.mem.usage.core.KeyContainer;
 import eu.sia.demo.mem.usage.util.TextToIntegerOrZero;
 import eu.sia.demo.mem.usage.view.Refreshable;
@@ -27,6 +28,9 @@ public class KeyAddLayoutCreatorImpl implements KeyAddLayoutCreator {
 
 	@Autowired
 	private KeyContainer keyContainer;
+
+	@Autowired
+	private DisplayBuffer displayBuffer;
 	
 	@Autowired
 	private TextToIntegerOrZero textToIntegerOrZero;
@@ -52,7 +56,7 @@ public class KeyAddLayoutCreatorImpl implements KeyAddLayoutCreator {
 			@Override
 			public void onComponentEvent(ClickEvent<Button> event) {
 				keySizeTextField.setReadOnly(false);
-				keySizeTextField.setValue(Integer.valueOf(keyContainer.size()).toString());
+				keySizeTextField.setValue(Integer.valueOf(displayBuffer.getContainerSize()).toString());
 				keySizeTextField.setReadOnly(true);
 			}
 		});

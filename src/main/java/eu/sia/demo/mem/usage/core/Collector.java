@@ -13,7 +13,7 @@ public interface Collector {
 	StatisticEntryCreator getEntryCreator();
 	int size();
 	List<MetricEntry> getLastEntries(int timeDelta, TimeUnit timeunit, ExtractAction clean);
-	void purgeBefore(long nanotime);
+	void purgeOlder(long nanotime);
 	void purgeBefore(int timeDelta, TimeUnit timeunit);
 	void add(MetricEntry entry);
 }

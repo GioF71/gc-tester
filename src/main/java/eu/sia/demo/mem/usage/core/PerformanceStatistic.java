@@ -1,7 +1,10 @@
 package eu.sia.demo.mem.usage.core;
 
-public interface PerformanceMetric {
+import java.util.Calendar;
+
+public interface PerformanceStatistic {
 	String getName();
+	Calendar creationTimeStamp();
 	int getCount();
 	Float getElapsedMin();
 	Float getElapsedMax();

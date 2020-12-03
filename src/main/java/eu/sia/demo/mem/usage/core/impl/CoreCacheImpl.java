@@ -9,13 +9,13 @@ import org.springframework.stereotype.Component;
 import eu.sia.demo.mem.usage.core.CoreCache;
 import eu.sia.demo.mem.usage.core.PerformanceMetricConsumer;
 import eu.sia.demo.mem.usage.data.CacheItem;
-import eu.sia.demo.mem.usage.util.NanotimeConverter;
+import eu.sia.demo.mem.usage.util.TimeUtil;
 
 @Component
 public class CoreCacheImpl implements CoreCache {
 	
 	@Autowired
-	private NanotimeConverter nanotimeConverter;
+	private TimeUtil timeUtil;
 	
 	private final Map<String, CacheItem> data = new HashMap<>();
 
@@ -70,8 +70,8 @@ public class CoreCacheImpl implements CoreCache {
 		if (performanceMetricConsumer != null) {
 			Long elapsed = System.nanoTime() - begin;
 			performanceMetricConsumer.accept(
-				nanotimeConverter.nanoToMilli(latencyNanoTime), 
-				nanotimeConverter.nanoToMilli(elapsed));
+				timeUtil.nanoToMilli(latencyNanoTime), 
+				timeUtil.nanoToMilli(elapsed));
 		}
 		return result;
 	}
