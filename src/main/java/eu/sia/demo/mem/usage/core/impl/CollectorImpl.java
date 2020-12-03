@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import eu.sia.demo.mem.usage.core.Collector;
-import eu.sia.demo.mem.usage.core.StatisticEntry;
+import eu.sia.demo.mem.usage.core.MetricEntry;
 import eu.sia.demo.mem.usage.core.StatisticEntryCreator;
 
 @Component
@@ -19,19 +19,19 @@ public class CollectorImpl implements Collector {
 	@Autowired
 	private StatisticEntryCreator creator;
 
-	private final List<StatisticEntry> entryList = new ArrayList<>(2000000);
+	private final List<MetricEntry> entryList = new ArrayList<>(2000000);
 
 	@Override
-	public void add(StatisticEntry entry) {
+	public void add(MetricEntry entry) {
 		synchronized(entryList) {
 			entryList.add(entry);
 		}
 	}
 	
-	private final Comparator<StatisticEntry> comparator = new Comparator<StatisticEntry>() {
+	private final Comparator<MetricEntry> comparator = new Comparator<MetricEntry>() {
 
 		@Override
-		public int compare(StatisticEntry left, StatisticEntry right) {
+		public int compare(MetricEntry left, MetricEntry right) {
 			long l = left.getCreationNanotime();
 			long r = right.getCreationNanotime();
 			if (l == r) {
@@ -44,14 +44,14 @@ public class CollectorImpl implements Collector {
 	};
 
 	@Override
-	public List<StatisticEntry> getLastEntries(int timeDelta, TimeUnit timeunit, ExtractAction clean) {
+	public List<MetricEntry> getLastEntries(int timeDelta, TimeUnit timeunit, ExtractAction clean) {
 		long lowest = getLowest(timeDelta, timeunit);
-		List<StatisticEntry> list = new ArrayList<>();
+		List<MetricEntry> list = new ArrayList<>();
 		synchronized(entryList) {
 			entryList.sort(comparator);
 			boolean keepAdding = true;
 			for (int i = entryList.size() - 1; keepAdding && i >= 0; --i) {
-				StatisticEntry current = entryList.get(i);
+				MetricEntry current = entryList.get(i);
 				keepAdding = current.getCreationNanotime() >= lowest;
 				if (keepAdding) {
 					list.add(current);
@@ -74,10 +74,10 @@ public class CollectorImpl implements Collector {
 	public void purgeBefore(long nanotime) {
 		synchronized(entryList) {
 			entryList.sort(comparator);
-			Iterator<StatisticEntry> it = entryList.iterator();
+			Iterator<MetricEntry> it = entryList.iterator();
 			boolean found = false;
 			while (!found && it.hasNext()) {
-				StatisticEntry current = it.next();
+				MetricEntry current = it.next();
 				if (current.getCreationNanotime() >= nanotime) {
 					found = true;
 				} else {

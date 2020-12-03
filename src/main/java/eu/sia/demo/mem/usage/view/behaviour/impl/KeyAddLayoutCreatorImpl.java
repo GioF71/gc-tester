@@ -1,9 +1,9 @@
 package eu.sia.demo.mem.usage.view.behaviour.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,7 +30,9 @@ public class KeyAddLayoutCreatorImpl implements KeyAddLayoutCreator {
 	
 	@Autowired
 	private TextToIntegerOrZero textToIntegerOrZero;
-
+	
+	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+	
 	@Override
 	public RefreshableComponent create() {
 		VerticalLayout vLayout = new VerticalLayout();
@@ -97,16 +99,16 @@ public class KeyAddLayoutCreatorImpl implements KeyAddLayoutCreator {
 
 			@Override
 			public void onComponentEvent(ClickEvent<Button> event) {
-				int howMany = Optional.ofNullable(addHowMany)
-					.map(tf -> tf.getValue())
-					.filter(s -> s.length() > 0)
-					.map(textToIntegerOrZero.getFunction())
-					.orElse(0);
-				List<String> newKeys = new ArrayList<>();
-				for (int i = 0; i < howMany; ++i) {
-					newKeys.add(UUID.randomUUID().toString());
-				}
-				keyContainer.put(newKeys);
+				executorService.submit(() -> {
+					int howMany = Optional.ofNullable(addHowMany)
+						.map(tf -> tf.getValue())
+						.filter(s -> s.length() > 0)
+						.map(textToIntegerOrZero.getFunction())
+						.orElse(0);
+					for (int i = 0; i < howMany; ++i) {
+						keyContainer.put(UUID.randomUUID().toString());
+					}
+				});
 			}
 		};
 	}

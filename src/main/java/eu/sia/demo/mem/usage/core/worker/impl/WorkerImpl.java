@@ -1,7 +1,7 @@
 package eu.sia.demo.mem.usage.core.worker.impl;
 
 import eu.sia.demo.mem.usage.core.PerformanceMetricConsumer;
-import eu.sia.demo.mem.usage.core.StatisticEntry;
+import eu.sia.demo.mem.usage.core.MetricEntry;
 import eu.sia.demo.mem.usage.core.WorkerConfiguration;
 import eu.sia.demo.mem.usage.core.worker.Worker;
 
@@ -12,7 +12,7 @@ public class WorkerImpl implements Worker {
 		
 		@Override
 		public void accept(Float latencyMillisec, Float elapsedMillisec) {
-			StatisticEntry entry = workerConfiguration.getCollector().getEntryCreator().create(latencyMillisec, elapsedMillisec);
+			MetricEntry entry = workerConfiguration.getCollector().getEntryCreator().create(latencyMillisec, elapsedMillisec);
 			workerConfiguration.getCollector().add(entry);
 		}
 	};

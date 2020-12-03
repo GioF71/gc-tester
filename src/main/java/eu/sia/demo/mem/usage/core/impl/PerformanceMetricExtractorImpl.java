@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import eu.sia.demo.mem.usage.core.PerformanceMetric;
 import eu.sia.demo.mem.usage.core.PerformanceMetricExtractor;
-import eu.sia.demo.mem.usage.core.StatisticEntry;
+import eu.sia.demo.mem.usage.core.MetricEntry;
 
 @Component
 public class PerformanceMetricExtractorImpl implements PerformanceMetricExtractor {
@@ -55,11 +55,11 @@ public class PerformanceMetricExtractorImpl implements PerformanceMetricExtracto
 	}
 
 	@Override
-	public PerformanceMetric get(String name, List<StatisticEntry> list) {
+	public PerformanceMetric get(String name, List<MetricEntry> list) {
 		Float avg = null, min = null, max = null;
 		Float totalElapsed = 0.0f;
 		int count = 0;
-		for (StatisticEntry e : list) {
+		for (MetricEntry e : list) {
 			++count;
 			Float currentElapsed = e.getElapsed();
 			totalElapsed += currentElapsed;

@@ -1,14 +1,14 @@
 package eu.sia.demo.mem.usage.core.impl;
 
-import eu.sia.demo.mem.usage.core.StatisticEntry;
+import eu.sia.demo.mem.usage.core.MetricEntry;
 
-class StatisticEntryImpl implements StatisticEntry {
+class MetricEntryImpl implements MetricEntry {
 
 	private Long creationNanoTime = System.nanoTime();
 	private float elapsed;
 	private float latency = 0.0f;
 		
-	public StatisticEntryImpl(float elapsed, float latency) {
+	public MetricEntryImpl(float elapsed, float latency) {
 		this.elapsed = elapsed;
 		this.latency = latency;
 	}
@@ -24,7 +24,7 @@ class StatisticEntryImpl implements StatisticEntry {
 	}
 
 	@Override
-	public int compareTo(StatisticEntry o) {
+	public int compareTo(MetricEntry o) {
 		if (creationNanoTime < o.getCreationNanotime()) {
 			return -1;
 		} else if (creationNanoTime > o.getCreationNanotime()) {

@@ -50,7 +50,8 @@ public class KeyContainerImpl implements KeyContainer {
 	public String getRandomKey() {
 		synchronized(keyList) {
 			int sz = keyList.size();
-			return Optional.of(keyList.size())
+			return Optional.of(keyList)
+				.map(List::size)
 				.filter(s -> s > 0)
 				.map(s -> new Random().nextInt(sz))
 				.map(r -> keyList.get(r))

@@ -19,7 +19,7 @@ import eu.sia.demo.mem.usage.core.Collector;
 import eu.sia.demo.mem.usage.core.Collector.ExtractAction;
 import eu.sia.demo.mem.usage.core.PerformanceMetric;
 import eu.sia.demo.mem.usage.core.PerformanceMetricExtractor;
-import eu.sia.demo.mem.usage.core.StatisticEntry;
+import eu.sia.demo.mem.usage.core.MetricEntry;
 import eu.sia.demo.mem.usage.view.Refreshable;
 import eu.sia.demo.mem.usage.view.RefreshableComponent;
 import eu.sia.demo.mem.usage.view.behaviour.StatisticLayoutCreator;
@@ -142,7 +142,7 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 	}
 
 	private void refreshStats(Controls c, int removeDelta, TimeUnit timeunit) {
-		List<StatisticEntry> seList = collector.getLastEntries(1000, TimeUnit.MILLISECONDS, ExtractAction.NONE);
+		List<MetricEntry> seList = collector.getLastEntries(1000, TimeUnit.MILLISECONDS, ExtractAction.NONE);
 		PerformanceMetric metric = performanceMetricExtractor.get("One Sec", seList);
 		c.changeReadOnly(false);
 		for (BiConsumer<PerformanceMetric, Controls> bc : metricConsumers) {

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import eu.sia.demo.mem.usage.core.Collector;
 import eu.sia.demo.mem.usage.core.PerformanceMetric;
 import eu.sia.demo.mem.usage.core.PerformanceMetricExtractor;
-import eu.sia.demo.mem.usage.core.StatisticEntry;
+import eu.sia.demo.mem.usage.core.MetricEntry;
 import eu.sia.demo.mem.usage.core.Collector.ExtractAction;
 
 @Component
@@ -43,12 +43,9 @@ public class PerformanceLogger {
 		}
 
 		private void iteration() {
-			//PerformanceMetric performanceMetric = performanceMetricExtractor.get("One sec", 1, TimeUnit.SECONDS);
-			List<StatisticEntry> list = collector.getLastEntries(1, TimeUnit.SECONDS, ExtractAction.NONE);
+			List<MetricEntry> list = collector.getLastEntries(1, TimeUnit.SECONDS, ExtractAction.NONE);
 			PerformanceMetric performanceMetric = performanceMetricExtractor.get("One sec", list);
 			logMetric(performanceMetric);
-//			PerformanceMetric performanceMetric10Sec = performanceMetricExtractor.get("Ten sec", 10, TimeUnit.SECONDS);
-//			logMetric(performanceMetric10Sec);
 			collector.purgeBefore(10, TimeUnit.SECONDS);
 		}
 

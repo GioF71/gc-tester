@@ -16,7 +16,7 @@ public class CollectorTest {
 		int keepUntil = 45;
 		Long keepUntilTimestamp = null;
 		for (int i = 0; i < statCount; ++i) {
-			StatisticEntryImpl entry = new StatisticEntryImpl(random.nextFloat(), random.nextFloat());
+			MetricEntryImpl entry = new MetricEntryImpl(random.nextFloat(), random.nextFloat());
 			c.add(entry);
 			Thread.sleep(0, delayNanoSec);
 			if (i == keepUntil) {
