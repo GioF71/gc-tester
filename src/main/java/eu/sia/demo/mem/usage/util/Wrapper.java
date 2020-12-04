@@ -4,11 +4,11 @@ public class Wrapper<T> {
 	
 	private T value;
 	
-	void set(T value) {
+	public void set(T value) {
 		this.value = value;
 	}
 	
-	T get() {
+	public T get() {
 		return this.value;
 	}
 }

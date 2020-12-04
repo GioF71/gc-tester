@@ -67,7 +67,7 @@ public class CollectorImpl implements Collector {
 	};
 
 	@Override
-	public List<MetricEntry> getLastEntries(int timeDelta, TimeUnit timeUnit, ExtractAction clean) {
+	public List<MetricEntry> getLastEntries(long timeDelta, TimeUnit timeUnit, ExtractAction clean) {
 		long lowest = timeUtil.getLowest(timeDelta, timeUnit);
 		List<MetricEntry> list = new ArrayList<>();
 		synchronized(entryList) {
@@ -89,7 +89,7 @@ public class CollectorImpl implements Collector {
 	}
 
 	@Override
-	public void purgeBefore(int timeDelta, TimeUnit timeUnit) {
+	public void purgeBefore(long timeDelta, TimeUnit timeUnit) {
 		long lowest = timeUtil.getLowest(timeDelta, timeUnit);
 		purgeOlder(lowest);
 	}

@@ -10,7 +10,6 @@ public class StatisticEntryCreatorImpl implements StatisticEntryCreator {
 
 	@Override
 	public MetricEntry create(Float latency, Float elapsed) {
-		// TODO Auto-generated method stub
 		return new MetricEntryImpl(elapsed, latency);
 	}
 

@@ -84,7 +84,7 @@ public class PerformanceMetricExtractorImpl implements PerformanceMetricExtracto
 	}
 
 	@Override
-	public PerformanceStatistic calculate(String name, List<MetricEntry> list, int timeDelta, TimeUnit timeUnit) {
+	public PerformanceStatistic calculate(String name, List<MetricEntry> list, long timeDelta, TimeUnit timeUnit) {
 		long lowest = timeUtil.getLowest(timeDelta, timeUnit);
 		Float avg = null, min = null, max = null;
 		Float totalElapsed = 0.0f;

@@ -12,8 +12,9 @@ public class WorkerImpl implements Worker {
 
 		@Override
 		public void accept(Float latencyMillisec, Float elapsedMillisec) {
-			MetricEntry entry = workerConfiguration.getCollector().getEntryCreator().create(latencyMillisec,
-					elapsedMillisec);
+			MetricEntry entry = workerConfiguration.getCollector().getEntryCreator().create(
+				latencyMillisec,
+				elapsedMillisec);
 			workerConfiguration.getCollector().add(entry);
 		}
 	};

@@ -32,7 +32,7 @@ public class TimeUtilImpl implements TimeUtil {
 	}
 	
 	@Override
-	public long getLowest(int timeDelta, TimeUnit timeunit) {
+	public long getLowest(long timeDelta, TimeUnit timeunit) {
 		long lowest = System.nanoTime();
 		lowest -= timeunit.toMicros(timeDelta) * 1000;
 		return lowest;
