@@ -92,7 +92,6 @@ public class DisplayBufferImpl implements DisplayBuffer {
 					}
 				}
 			}
-
 		};
 		Thread t = new Thread(r);
 		t.start();
@@ -174,34 +173,14 @@ public class DisplayBufferImpl implements DisplayBuffer {
 		List<MetricEntry> list = collector.getLastEntries(deltaMilliSec, TimeUnit.MILLISECONDS, ExtractAction.NONE);
 		for (RequestedStatistic requestedStatistic : toCalculateList) {
 			PerformanceStatistic statistic = performanceMetricExtractor.calculate(
-				requestedStatistic.getName(), 
 				list, 
-				requestedStatistic.getDelta(),
+				requestedStatistic.getDelta(), 
 				requestedStatistic.getTimeUnit());
 			synchronized(currentPerformanceStatisticMap) {
 				currentPerformanceStatisticMap.put(requestedStatistic.getName(), statistic);
 			}
 		}
 		collector.purgeBefore(deltaMilliSec + ADDITIONAL_DELTA_MILLISEC, TimeUnit.MILLISECONDS);
-		
-		//List<MetricEntry> list = collector.getLastEntries(60, TimeUnit.SECONDS, ExtractAction.NONE);
-		
-//		PerformanceStatistic oneSecStatistic = performanceMetricExtractor.calculate("One sec", list, 1,
-//				TimeUnit.SECONDS);
-//		synchronized (oneSecWrapper) {
-//			oneSecWrapper.set(oneSecStatistic);
-//		}
-//		PerformanceStatistic fiveSecStatistic = performanceMetricExtractor.calculate("Five sec", list, 5,
-//				TimeUnit.SECONDS);
-//		synchronized (fiveSecWrapper) {
-//			fiveSecWrapper.set(fiveSecStatistic);
-//		}
-//		PerformanceStatistic oneMinuteStatistic = performanceMetricExtractor.calculate("Sixty sec", list, 60,
-//				TimeUnit.SECONDS);
-//		synchronized (oneMinuteWrapper) {
-//			oneMinuteWrapper.set(oneMinuteStatistic);
-//		}
-//		collector.purgeBefore(90, TimeUnit.SECONDS);
 	}
 
 	private void collectKeyCount() {

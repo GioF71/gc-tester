@@ -22,28 +22,28 @@ public class PerformanceMetricExtractorImpl implements PerformanceMetricExtracto
 	class LocalPerformanceStatistic implements PerformanceStatistic {
 
 		private final Calendar creationTimeStamp = Calendar.getInstance();
-		private final String name;
 		private final int count;
 		private final Float elapsedMin;
 		private final Float elapsedMax;
 		private final Float elapsedAvg;
+		private final long oldestNanoTime;
 		
-		LocalPerformanceStatistic(String name, int count, Float elapsedMin, Float elapsedMax, Float elapsedAvg) {
-			this.name = name;
+		LocalPerformanceStatistic(
+				int count, 
+				Float elapsedMin, 
+				Float elapsedMax, 
+				Float elapsedAvg, 
+				long oldestNanoTime) {
 			this.count = count;
 			this.elapsedMin = elapsedMin;
 			this.elapsedMax = elapsedMax;
 			this.elapsedAvg = elapsedAvg;
+			this.oldestNanoTime = oldestNanoTime;
 		}
 
 		@Override
 		public Calendar creationTimeStamp() {
 			return creationTimeStamp;
-		}
-
-		@Override
-		public String getName() {
-			return name;
 		}
 
 		@Override
@@ -65,33 +65,23 @@ public class PerformanceMetricExtractorImpl implements PerformanceMetricExtracto
 		public Float getElapsedAvg() {
 			return elapsedAvg;
 		}
-	}
 
-	@Override
-	public PerformanceStatistic calculate(String name, List<MetricEntry> list) {
-		Float avg = null, min = null, max = null;
-		Float totalElapsed = 0.0f;
-		int count = 0;
-		for (MetricEntry e : list) {
-			++count;
-			Float currentElapsed = e.getElapsed();
-			totalElapsed += currentElapsed;
-			min = update(min, currentElapsed, (c, n) -> n < c);
-			max = update(max, currentElapsed, (c, n) -> n > c);
+		@Override
+		public long getOldestNanoTime() {
+			return oldestNanoTime;
 		}
-		avg = count > 0 ? totalElapsed / count : null;
-		return new LocalPerformanceStatistic(name, count, min, max, avg);
 	}
 
 	@Override
-	public PerformanceStatistic calculate(String name, List<MetricEntry> list, long timeDelta, TimeUnit timeUnit) {
+	public PerformanceStatistic calculate(List<MetricEntry> metricEntryList, long timeDelta, TimeUnit timeUnit) {
 		long lowest = timeUtil.getLowest(timeDelta, timeUnit);
 		Float avg = null, min = null, max = null;
 		Float totalElapsed = 0.0f;
 		int count = 0;
+		long oldestNanoTime = -1;
 		boolean keepAdding = true;
-		for (int i = list.size() - 1; keepAdding && i >= 0; --i) {
-			MetricEntry e = list.get(i);
+		for (int i = metricEntryList.size() - 1; keepAdding && i >= 0; --i) {
+			MetricEntry e = metricEntryList.get(i);
 			keepAdding = e.getCreationNanotime() >= lowest;
 			if (keepAdding) {
 				++count;
@@ -99,10 +89,14 @@ public class PerformanceMetricExtractorImpl implements PerformanceMetricExtracto
 				totalElapsed += currentElapsed;
 				min = update(min, currentElapsed, (c, n) -> n < c);
 				max = update(max, currentElapsed, (c, n) -> n > c);
+				long currentNanoTime = e.getCreationNanotime();
+				if (oldestNanoTime == -1 || oldestNanoTime > currentNanoTime) {
+					oldestNanoTime = currentNanoTime;
+				}
 			}
 		}
 		avg = count > 0 ? totalElapsed / count : null;
-		return new LocalPerformanceStatistic(name, count, min, max, avg);
+		return new LocalPerformanceStatistic(count, min, max, avg, oldestNanoTime);
 	}
 
 	private Float update(Float current, Float newer, BiFunction<Float, Float, Boolean> needsUpdate) {

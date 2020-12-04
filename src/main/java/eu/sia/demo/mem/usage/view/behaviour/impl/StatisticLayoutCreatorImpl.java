@@ -50,13 +50,13 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 		(m, c) -> updateValue(m, c, Controls::getAvg, PerformanceStatistic::getElapsedAvg),
 		(m, c) -> updateValue(m, c, Controls::getMax, PerformanceStatistic::getElapsedMax),
 		(m, c) -> updateValue(m, c, Controls::getMin, PerformanceStatistic::getElapsedMin),
-		(m, c) -> c.getCreationTime().setValue(Optional.ofNullable(m).filter(x -> x.getCount() > 0).map(PerformanceStatistic::creationTimeStamp).map(timeUtil.getToTimeStampFunction()).orElse("---")),
-		(m, c) -> c.getName().setValue(Optional.ofNullable(m).map(PerformanceStatistic::getName).orElse("---")));
+		(m, c) -> c.getCreationTime().setValue(Optional.ofNullable(m).filter(x -> x.getCount() > 0).map(PerformanceStatistic::creationTimeStamp).map(timeUtil.getToTimeStampFunction()).orElse("---")));
 	
 	class Controls {
 		
 		private final TextField name;
 		private final TextField creationTime;
+		//private final TextField oldestTime;
 		private final TextField cnt;
 		private final TextField avg;
 		private final TextField max;
@@ -126,24 +126,10 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 			vLayout.add(layout);
 			controlsMap.put(current.getName(), controls);
 		}
-		
-		
-//		Controls controlsOneSec = createControlSet("OneSec");
-//		HorizontalLayout oneSecLayout = addControlsToLayout(controlsOneSec);
-//		Controls controlsFiveSec = createControlSet("FiveSec");
-//		HorizontalLayout fiveSecLayout = addControlsToLayout(controlsFiveSec);
-//		Controls controlsOneMin = createControlSet("OneMinute");
-//		HorizontalLayout oneMinLayout = addControlsToLayout(controlsOneMin);
-//		vLayout.add(oneSecLayout);
-//		vLayout.add(fiveSecLayout);
-//		vLayout.add(oneMinLayout);
 		Refreshable refreshable = new Refreshable() {
 
 			@Override
 			public void refresh() {
-//				refreshStats(controlsOneSec, db -> db.getPerformanceStatistic("OneSec"));
-//				refreshStats(controlsFiveSec, db -> db.getPerformanceStatistic("FiveSec"));
-//				refreshStats(controlsOneMin, db -> db.getPerformanceStatistic("OneMinute"));
 				for (RequestedStatistic current : requestedStatistics) {
 					Controls controls = controlsMap.get(current.getName());
 					refreshStats(controls, db -> db.getPerformanceStatistic(current.getName()));
@@ -178,6 +164,8 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 
 	private Controls createControlSet(String statisticName) {
 		TextField name = new TextField(statisticName);
+		name.setValue(statisticName);
+		name.setReadOnly(true);
 		TextField creationTime = new TextField("Creation Time");
 		TextField cnt = new TextField("Count");
 		TextField avg = new TextField("Avg");
