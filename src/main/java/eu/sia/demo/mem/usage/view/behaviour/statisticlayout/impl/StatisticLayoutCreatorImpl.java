@@ -1,4 +1,4 @@
-package eu.sia.demo.mem.usage.view.behaviour.impl;
+package eu.sia.demo.mem.usage.view.behaviour.statisticlayout.impl;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,68 +45,14 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 	
 	private Collection<RequestedStatistic> requestedStatistics;
 	
-	private final List<BiConsumer<PerformanceStatistic, Controls>> metricConsumers = Arrays.asList(
+	private final List<BiConsumer<PerformanceStatistic, ControlContainer>> metricConsumers = Arrays.asList(
 		(m, c) -> c.getCnt().setValue(Optional.ofNullable(m).map(PerformanceStatistic::getCount).map(i -> Integer.valueOf(i).toString()).orElse("---")),
-		(m, c) -> updateValue(m, c, Controls::getAvg, PerformanceStatistic::getElapsedAvg),
-		(m, c) -> updateValue(m, c, Controls::getMax, PerformanceStatistic::getElapsedMax),
-		(m, c) -> updateValue(m, c, Controls::getMin, PerformanceStatistic::getElapsedMin),
+		(m, c) -> c.getOldestAge().setValue(Optional.ofNullable(m).map(PerformanceStatistic::getOldestNanoTime).filter(o -> o >= 0).map(o -> System.nanoTime() - o).map(o -> String.format("%.3f msec ago", (float) o / (1000000.0f))).orElse("---")),
+		(m, c) -> updateValue(m, c, ControlContainer::getAvg, PerformanceStatistic::getElapsedAvg),
+		(m, c) -> updateValue(m, c, ControlContainer::getMax, PerformanceStatistic::getElapsedMax),
+		(m, c) -> updateValue(m, c, ControlContainer::getMin, PerformanceStatistic::getElapsedMin),
 		(m, c) -> c.getCreationTime().setValue(Optional.ofNullable(m).filter(x -> x.getCount() > 0).map(PerformanceStatistic::creationTimeStamp).map(timeUtil.getToTimeStampFunction()).orElse("---")));
 	
-	class Controls {
-		
-		private final TextField name;
-		private final TextField creationTime;
-		//private final TextField oldestTime;
-		private final TextField cnt;
-		private final TextField avg;
-		private final TextField max;
-		private final TextField min;
-		private final List<TextField> readOnlyChangeList;
-		
-		Controls(TextField name, TextField creationTime, TextField cnt, TextField avg, TextField max, TextField min) {
-			this.name = name;
-			this.creationTime = creationTime;
-			this.cnt = cnt;
-			this.avg = avg;
-			this.max = max;
-			this.min = min;
-			this.readOnlyChangeList = Arrays.asList(
-				this.name,
-				this.creationTime,
-				this.cnt, 
-				this.avg, 
-				this.max, 
-				this.min);
-		}
-		
-		TextField getName() {
-			return name;
-		}
-		
-		TextField getCreationTime() {
-			return creationTime;
-		}
-		
-		TextField getCnt() {
-			return cnt;
-		}
-
-		TextField getAvg() {
-			return avg;
-		}
-
-		TextField getMax() {
-			return max;
-		}
-
-		TextField getMin() {
-			return min;
-		}
-
-		void changeReadOnly(boolean readOnly) {
-			this.readOnlyChangeList.forEach(x -> x.setReadOnly(readOnly));
-		}
-	}
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -119,19 +65,19 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 	@Override
 	public RefreshableComponent create(long removeDelta, TimeUnit timeUnit) {
 		VerticalLayout vLayout = new VerticalLayout();
-		Map<String, Controls> controlsMap = new HashMap<>();
+		Map<String, ControlContainer> controlContainerMap = new HashMap<>();
 		for (RequestedStatistic current : requestedStatistics) {
-			Controls controls = createControlSet(current.getName());
+			ControlContainer controls = createControlContainer(current.getName());
 			HorizontalLayout layout = addControlsToLayout(controls);
 			vLayout.add(layout);
-			controlsMap.put(current.getName(), controls);
+			controlContainerMap.put(current.getName(), controls);
 		}
 		Refreshable refreshable = new Refreshable() {
 
 			@Override
 			public void refresh() {
 				for (RequestedStatistic current : requestedStatistics) {
-					Controls controls = controlsMap.get(current.getName());
+					ControlContainer controls = controlContainerMap.get(current.getName());
 					refreshStats(controls, db -> db.getPerformanceStatistic(current.getName()));
 				}
 			}
@@ -150,28 +96,30 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 		};
 	}
 
-	private HorizontalLayout addControlsToLayout(Controls controls) {
+	private HorizontalLayout addControlsToLayout(ControlContainer controlContainer) {
 		HorizontalLayout target = new HorizontalLayout();
 		target.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
-		target.add(controls.getName());
-		target.add(controls.getCreationTime());
-		target.add(controls.getCnt());
-		target.add(controls.getAvg());
-		target.add(controls.getMax());
-		target.add(controls.getMin());
+		target.add(controlContainer.getName());
+		target.add(controlContainer.getCreationTime());
+		target.add(controlContainer.getOldestAge());
+		target.add(controlContainer.getCnt());
+		target.add(controlContainer.getAvg());
+		target.add(controlContainer.getMax());
+		target.add(controlContainer.getMin());
 		return target;
 	}
 
-	private Controls createControlSet(String statisticName) {
+	private ControlContainer createControlContainer(String statisticName) {
 		TextField name = new TextField(statisticName);
 		name.setValue(statisticName);
 		name.setReadOnly(true);
 		TextField creationTime = new TextField("Creation Time");
+		TextField oldestAge = new TextField("Oldest item age");
 		TextField cnt = new TextField("Count");
 		TextField avg = new TextField("Avg");
 		TextField max = new TextField("Max");
 		TextField min = new TextField("Min");
-		Controls controls = new Controls(name, creationTime, cnt, avg, max, min);
+		ControlContainer controls = new ControlContainer(name, creationTime, oldestAge, cnt, avg, max, min);
 		return controls;
 	}
 	
@@ -196,14 +144,14 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 		}
 	};
 	
-	private void updateValue(PerformanceStatistic metric, Controls c, Function<Controls, TextField> textFieldExtractor, Function<PerformanceStatistic, Float> metricExtractor) {
+	private void updateValue(PerformanceStatistic metric, ControlContainer c, Function<ControlContainer, TextField> textFieldExtractor, Function<PerformanceStatistic, Float> metricExtractor) {
 		textFieldExtractor.apply(c).setValue(floatFormatFunction.apply(metric, metricExtractor));
 	}
 
-	private void refreshStats(Controls c, Function<DisplayBuffer, PerformanceStatistic> statisticRetriever) {
+	private void refreshStats(ControlContainer c, Function<DisplayBuffer, PerformanceStatistic> statisticRetriever) {
 		PerformanceStatistic metric = statisticRetriever.apply(displayBuffer);
 		c.changeReadOnly(false);
-		for (BiConsumer<PerformanceStatistic, Controls> bc : metricConsumers) {
+		for (BiConsumer<PerformanceStatistic, ControlContainer> bc : metricConsumers) {
 			bc.accept(metric, c);
 		}
 		c.changeReadOnly(true);
