@@ -1,6 +1,6 @@
 package eu.sia.demo.mem.usage.view.behaviour.statisticlayout.impl;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -44,15 +43,7 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 	private TimeUtil timeUtil;
 	
 	private Collection<RequestedStatistic> requestedStatistics;
-	
-	private final List<BiConsumer<PerformanceStatistic, ControlContainer>> metricConsumers = Arrays.asList(
-		(m, c) -> c.getCnt().setValue(Optional.ofNullable(m).map(PerformanceStatistic::getCount).map(i -> Integer.valueOf(i).toString()).orElse("---")),
-		(m, c) -> c.getOldestAge().setValue(Optional.ofNullable(m).map(PerformanceStatistic::getOldestNanoTime).filter(o -> o >= 0).map(o -> System.nanoTime() - o).map(o -> String.format("%.3f msec ago", (float) o / (1000000.0f))).orElse("---")),
-		(m, c) -> updateValue(m, c, ControlContainer::getAvg, PerformanceStatistic::getElapsedAvg),
-		(m, c) -> updateValue(m, c, ControlContainer::getMax, PerformanceStatistic::getElapsedMax),
-		(m, c) -> updateValue(m, c, ControlContainer::getMin, PerformanceStatistic::getElapsedMin),
-		(m, c) -> c.getCreationTime().setValue(Optional.ofNullable(m).filter(x -> x.getCount() > 0).map(PerformanceStatistic::creationTimeStamp).map(timeUtil.getToTimeStampFunction()).orElse("---")));
-	
+	private final Collection<StatisticFieldMapping> statisticFieldMappingList = new ArrayList<>();
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -60,6 +51,41 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 		for (RequestedStatistic current : requestedStatistics) {
 			displayBuffer.requestStatistic(current.getName(), current.getDelta(), current.getTimeUnit());
 		}
+		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.NAME, (m, c) -> {}));
+		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.CREATION_TIME, creationTimeTransformer));
+		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.OLDEST_AGE, oldestAgeTransformer));
+		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.CNT, countTransformer));
+		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.AVG, floatTransformer(StatisticField.AVG.name(), PerformanceStatistic::getElapsedAvg)));
+		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.MAX, floatTransformer(StatisticField.MAX.name(), PerformanceStatistic::getElapsedMax)));
+		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.MIN, floatTransformer(StatisticField.MIN.name(), PerformanceStatistic::getElapsedMin)));
+	}
+	
+	private final Transformer creationTimeTransformer = new Transformer() {
+		
+		@Override
+		public void accept(PerformanceStatistic m, ControlContainer c) {
+			c.byName(StatisticField.CREATION_TIME.name()).setValue(Optional.ofNullable(m).filter(x -> x.getCount() > 0).map(PerformanceStatistic::creationTimeStamp).map(timeUtil.getToTimeStampFunction()).orElse("---"));
+		}
+	}; 
+
+	private final Transformer oldestAgeTransformer = new Transformer() {
+		
+		@Override
+		public void accept(PerformanceStatistic m, ControlContainer c) {
+			c.byName(StatisticField.OLDEST_AGE.name()).setValue(Optional.ofNullable(m).map(PerformanceStatistic::getOldestNanoTime).filter(o -> o >= 0).map(o -> System.nanoTime() - o).map(o -> String.format("%.3f msec ago", (float) o / (1000000.0f))).orElse("---"));
+		}
+	}; 
+	
+	private final Transformer countTransformer = new Transformer() {
+		
+		@Override
+		public void accept(PerformanceStatistic m, ControlContainer c) {
+			c.byName(StatisticField.CNT.name()).setValue(Optional.ofNullable(m).map(PerformanceStatistic::getCount).map(i -> Integer.valueOf(i).toString()).orElse("---"));
+		}
+	}; 
+	
+	private Transformer floatTransformer(String name, Function<PerformanceStatistic, Float> floatExtractor) {
+		return (m, c) -> updateValue(m, floatExtractor, c, x -> x.byName(name));
 	}
 	
 	@Override
@@ -99,27 +125,25 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 	private HorizontalLayout addControlsToLayout(ControlContainer controlContainer) {
 		HorizontalLayout target = new HorizontalLayout();
 		target.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
-		target.add(controlContainer.getName());
-		target.add(controlContainer.getCreationTime());
-		target.add(controlContainer.getOldestAge());
-		target.add(controlContainer.getCnt());
-		target.add(controlContainer.getAvg());
-		target.add(controlContainer.getMax());
-		target.add(controlContainer.getMin());
+		for (TextField current : controlContainer.getTextFieldCollection()) {
+			target.add(current);
+		}
 		return target;
 	}
 
 	private ControlContainer createControlContainer(String statisticName) {
-		TextField name = new TextField(statisticName);
-		name.setValue(statisticName);
-		name.setReadOnly(true);
-		TextField creationTime = new TextField("Creation Time");
-		TextField oldestAge = new TextField("Oldest item age");
-		TextField cnt = new TextField("Count");
-		TextField avg = new TextField("Avg");
-		TextField max = new TextField("Max");
-		TextField min = new TextField("Min");
-		ControlContainer controls = new ControlContainer(name, creationTime, oldestAge, cnt, avg, max, min);
+		List<RequestTextField> list = new ArrayList<>();
+		for (StatisticFieldMapping current : statisticFieldMappingList) {
+			RequestTextField rtf = new RequestTextField(
+				current.getStatisticField().name(), 
+				current.getStatisticField().getCaption(),
+				current.getStatisticField().isProcessReadOnly());
+			list.add(rtf);
+		}
+		ControlContainer controls = new ControlContainer(list);
+		controls.byName(StatisticField.NAME.name()).setReadOnly(false);
+		controls.byName(StatisticField.NAME.name()).setValue(statisticName);
+		controls.byName(StatisticField.NAME.name()).setReadOnly(true);
 		return controls;
 	}
 	
@@ -144,15 +168,20 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 		}
 	};
 	
-	private void updateValue(PerformanceStatistic metric, ControlContainer c, Function<ControlContainer, TextField> textFieldExtractor, Function<PerformanceStatistic, Float> metricExtractor) {
-		textFieldExtractor.apply(c).setValue(floatFormatFunction.apply(metric, metricExtractor));
+	private void updateValue(
+			PerformanceStatistic metric, 
+			Function<PerformanceStatistic, Float> metricExtractor, 
+			ControlContainer controlContainer, 
+			Function<ControlContainer, TextField> textFieldExtractor) {
+		String valueAsString = floatFormatFunction.apply(metric, metricExtractor);
+		textFieldExtractor.apply(controlContainer).setValue(valueAsString);
 	}
 
 	private void refreshStats(ControlContainer c, Function<DisplayBuffer, PerformanceStatistic> statisticRetriever) {
 		PerformanceStatistic metric = statisticRetriever.apply(displayBuffer);
 		c.changeReadOnly(false);
-		for (BiConsumer<PerformanceStatistic, ControlContainer> bc : metricConsumers) {
-			bc.accept(metric, c);
+		for (StatisticFieldMapping current : statisticFieldMappingList) {
+			current.getTransformer().accept(metric, c);
 		}
 		c.changeReadOnly(true);
 	}

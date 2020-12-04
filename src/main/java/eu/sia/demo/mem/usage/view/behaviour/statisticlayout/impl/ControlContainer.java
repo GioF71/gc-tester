@@ -1,75 +1,45 @@
 package eu.sia.demo.mem.usage.view.behaviour.statisticlayout.impl;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import com.vaadin.flow.component.textfield.TextField;
 
 class ControlContainer {
 
-	private final TextField name;
-	private final TextField creationTime;
-	private final TextField oldestAge;
-	private final TextField cnt;
-	private final TextField avg;
-	private final TextField max;
-	private final TextField min;
-	private final List<TextField> readOnlyChangeList;
+	private final List<TextField> textFieldList = new ArrayList<>();
+	private final Map<String, TextField> map = new HashMap<>();
+	private final List<String> readOnlyChangeList = new ArrayList<>();
 
-	ControlContainer(
-			TextField name, 
-			TextField creationTime, 
-			TextField oldestAge, 
-			TextField cnt, 
-			TextField avg, 
-			TextField max,
-			TextField min) {
-		this.name = name;
-		this.creationTime = creationTime;
-		this.oldestAge = oldestAge;
-		this.cnt = cnt;
-		this.avg = avg;
-		this.max = max;
-		this.min = min;
-		this.readOnlyChangeList = Arrays.asList(
-			this.name, 
-			this.creationTime, 
-			this.oldestAge, 
-			this.cnt, 
-			this.avg,
-			this.max, 
-			this.min);
+	ControlContainer(Collection<RequestTextField> requestTextFieldArray) {
+		for (RequestTextField current : Optional.ofNullable(requestTextFieldArray).orElse(Collections.emptyList())) {
+			TextField textField = new TextField(current.getCaption());
+			put(current.getName(), textField);
+			if (current.isProcessReadOnly()) {
+				this.readOnlyChangeList.add(current.getName());
+			}
+		}
 	}
-
-	TextField getName() {
-		return name;
+	
+	private void put(String name, TextField textField) {
+		this.textFieldList.add(textField);
+		this.map.put(name, textField);
 	}
-
-	TextField getCreationTime() {
-		return creationTime;
+	
+	Collection<TextField> getTextFieldCollection() {
+		return Collections.unmodifiableList(textFieldList);
 	}
-
-	TextField getOldestAge() {
-		return oldestAge;
-	}
-
-	TextField getCnt() {
-		return cnt;
-	}
-
-	TextField getAvg() {
-		return avg;
-	}
-
-	TextField getMax() {
-		return max;
-	}
-
-	TextField getMin() {
-		return min;
+	
+	TextField byName(String name) {
+		return map.get(name);
 	}
 
 	void changeReadOnly(boolean readOnly) {
-		this.readOnlyChangeList.forEach(x -> x.setReadOnly(readOnly));
+		this.readOnlyChangeList.forEach(x -> map.get(x).setReadOnly(readOnly));
 	}
 }
