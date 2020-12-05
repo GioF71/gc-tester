@@ -11,13 +11,15 @@
 	</parent>
 	<groupId>com.giof71.demo</groupId>
 	<artifactId>sb-mem-usage-demo</artifactId>
-	<version>1.0.0-RC-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>sb-mem-usage-demo</name>
 	<description>sb-mem-usage-demo</description>
 
 	<properties>
 		<java.version>8</java.version>
 		<vaadin.version>14.4.3</vaadin.version>
+		<vaadin.productionMode>false</vaadin.productionMode>
+		<vaadin.compatibilityMode>false</vaadin.compatibilityMode>
 	</properties>
 
 	<repositories>
@@ -69,8 +71,27 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-maven-plugin</artifactId>
+				<version>${vaadin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-frontend</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<configuration>
+							<mainClass>com.giof71.demo.mem.usage.SbMemUsageDemoApplication</mainClass>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
