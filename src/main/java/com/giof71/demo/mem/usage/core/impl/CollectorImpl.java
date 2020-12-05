@@ -89,6 +89,14 @@ public class CollectorImpl implements Collector {
 	}
 
 	@Override
+	public void purgeAll() {
+		synchronized(entryList) {
+			entryList.clear();
+			lastNanoTime = null;
+		}
+	}
+
+	@Override
 	public void purgeBefore(long timeDelta, TimeUnit timeUnit) {
 		long lowest = timeUtil.getLowest(timeDelta, timeUnit);
 		purgeOlder(lowest);
