@@ -4,7 +4,7 @@ enum StatisticField {
 	
 	NAME("Name"),
 	CREATION_TIME("Creation Time"),
-	OLDEST_AGE("Oldest Item Age"),
+	NEWEST_AGE("Newest Item Age"),
 	CNT("Count"),
 	AVG("Avg"),
 	SPEED("Speed"),
