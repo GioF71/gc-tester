@@ -23,27 +23,46 @@ public class PerformanceMetricExtractorImpl implements PerformanceMetricExtracto
 
 		private final Calendar creationTimeStamp = Calendar.getInstance();
 		private final int count;
+		private final long timeDelta;
+		private final TimeUnit timeUnit;
 		private final Float elapsedMin;
 		private final Float elapsedMax;
 		private final Float elapsedAvg;
 		private final long oldestNanoTime;
+		private final long newestNanoTime;
 		
 		LocalPerformanceStatistic(
+				long timeDelta,
+				TimeUnit timeUnit,
 				int count, 
 				Float elapsedMin, 
 				Float elapsedMax, 
 				Float elapsedAvg, 
-				long oldestNanoTime) {
+				long oldestNanoTime,
+				long newestNanoTime) {
+			this.timeDelta = timeDelta;
+			this.timeUnit = timeUnit;
 			this.count = count;
 			this.elapsedMin = elapsedMin;
 			this.elapsedMax = elapsedMax;
 			this.elapsedAvg = elapsedAvg;
 			this.oldestNanoTime = oldestNanoTime;
+			this.newestNanoTime = newestNanoTime;
 		}
 
 		@Override
 		public Calendar creationTimeStamp() {
 			return creationTimeStamp;
+		}
+
+		@Override
+		public long getTimeDelta() {
+			return timeDelta;
+		}
+
+		@Override
+		public TimeUnit getTimeUnit() {
+			return timeUnit;
 		}
 
 		@Override
@@ -70,6 +89,11 @@ public class PerformanceMetricExtractorImpl implements PerformanceMetricExtracto
 		public long getOldestNanoTime() {
 			return oldestNanoTime;
 		}
+
+		@Override
+		public long getNewestNanoTime() {
+			return newestNanoTime;
+		}
 	}
 
 	@Override
@@ -79,6 +103,7 @@ public class PerformanceMetricExtractorImpl implements PerformanceMetricExtracto
 		Float totalElapsed = 0.0f;
 		int count = 0;
 		long oldestNanoTime = -1;
+		long newestNanoTime = -1;
 		boolean keepAdding = true;
 		for (int i = metricEntryList.size() - 1; keepAdding && i >= 0; --i) {
 			MetricEntry e = metricEntryList.get(i);
@@ -93,10 +118,13 @@ public class PerformanceMetricExtractorImpl implements PerformanceMetricExtracto
 				if (oldestNanoTime == -1 || oldestNanoTime > currentNanoTime) {
 					oldestNanoTime = currentNanoTime;
 				}
+				if (newestNanoTime == -1 || newestNanoTime < currentNanoTime) {
+					newestNanoTime = currentNanoTime;
+				}
 			}
 		}
 		avg = count > 0 ? totalElapsed / count : null;
-		return new LocalPerformanceStatistic(count, min, max, avg, oldestNanoTime);
+		return new LocalPerformanceStatistic(timeDelta, timeUnit, count, min, max, avg, oldestNanoTime, newestNanoTime);
 	}
 
 	private Float update(Float current, Float newer, BiFunction<Float, Float, Boolean> needsUpdate) {
