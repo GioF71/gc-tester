@@ -24,7 +24,6 @@ public class CollectorTest {
 			}
 		}
 		c.purgeOlder(keepUntilTimestamp);
-		
 		int residualSize = c.size();
 		Assert.assertTrue(residualSize == (statCount - keepUntil));
 	}
