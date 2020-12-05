@@ -7,6 +7,7 @@ enum StatisticField {
 	OLDEST_AGE("Oldest Item Age"),
 	CNT("Count"),
 	AVG("Avg"),
+	SPEED("Speed"),
 	MAX("Max"),
 	MIN("Min");
 	
