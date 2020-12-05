@@ -7,9 +7,9 @@ public interface PerformanceStatistic {
 	long getTimeDelta();
 	TimeUnit getTimeUnit();
 	Calendar creationTimeStamp();
-	long getOldestNanoTime();
-	long getNewestNanoTime();
-	int getCount();
+	Long getOldestNanoTime();
+	Long getNewestNanoTime();
+	Integer getCount();
 	Float getElapsedMin();
 	Float getElapsedMax();
 	Float getElapsedAvg();
