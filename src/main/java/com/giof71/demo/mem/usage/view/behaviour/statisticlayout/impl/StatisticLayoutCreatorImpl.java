@@ -53,7 +53,7 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 		}
 		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.NAME, (m, c) -> {}));
 		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.CREATION_TIME, creationTimeTransformer));
-		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.OLDEST_AGE, oldestAgeTransformer));
+		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.NEWEST_AGE, newestAgeTransformer));
 		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.CNT, countTransformer));
 		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.SPEED, speedTransformer));
 		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.AVG, floatTransformer(StatisticField.AVG.name(), PerformanceStatistic::getElapsedAvg)));
@@ -81,11 +81,11 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 		}
 	}; 
 
-	private final Transformer oldestAgeTransformer = new Transformer() {
+	private final Transformer newestAgeTransformer = new Transformer() {
 		
 		@Override
 		public void accept(PerformanceStatistic m, ControlContainer c) {
-			c.setValue(StatisticField.OLDEST_AGE.name(), Optional.ofNullable(m).map(PerformanceStatistic::getOldestNanoTime).filter(o -> o >= 0).map(o -> System.nanoTime() - o).map(o -> String.format("%.3f msec ago", (float) o / (1000000.0f))).orElse("---"));
+			c.setValue(StatisticField.NEWEST_AGE.name(), Optional.ofNullable(m).map(PerformanceStatistic::getNewestNanoTime).filter(o -> o >= 0).map(o -> System.nanoTime() - o).map(o -> String.format("%.3f msec ago", (float) o / (1000000.0f))).orElse("---"));
 		}
 	}; 
 	
