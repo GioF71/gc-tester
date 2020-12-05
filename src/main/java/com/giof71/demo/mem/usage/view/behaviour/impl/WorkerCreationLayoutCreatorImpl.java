@@ -41,8 +41,8 @@ public class WorkerCreationLayoutCreatorImpl implements WorkerCreationLayoutCrea
 		pauseMillisec.setValue("10");
 		workerLayout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
 		layout.add(workerLayout);
-		Button btn = new Button("Create workers");
-		btn.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
+		Button createWorkers = new Button("Create workers");
+		createWorkers.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
 			
 			private static final long serialVersionUID = -2039028744374624585L;
 
@@ -56,7 +56,9 @@ public class WorkerCreationLayoutCreatorImpl implements WorkerCreationLayoutCrea
 				}
 			}
 		});
-		workerLayout.add(howMany, pauseMillisec, btn);
+		Button removeAllWorkers = new Button("Remove all workers");
+		removeAllWorkers.addClickListener(event -> workerManager.reset());
+		workerLayout.add(howMany, pauseMillisec, createWorkers, removeAllWorkers);
 		HorizontalLayout currentStatusLayout = new HorizontalLayout();
 		currentStatusLayout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
 		TextField currentWorkers = new TextField("Current Workers");
