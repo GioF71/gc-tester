@@ -69,36 +69,31 @@
 	</dependencyManagement>
 
 	<build>
-    <plugins>
-        <!-- The Spring Boot Maven plugin for easy
-             execution from CLI and packaging -->
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>
+		<plugins>
+			<!-- The Spring Boot Maven plugin for easy execution from CLI and packaging -->
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>
                 spring-boot-maven-plugin
             </artifactId>
-        </plugin>
+			</plugin>
 
-        <!--
-            Takes care of synchronizing java
-            dependencies and imports in package.json and
-            main.js files. It also creates
-            webpack.config.js if does not exist yet.
-        -->
-        <plugin>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-maven-plugin</artifactId>
-            <version>${vaadin.version}</version>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>prepare-frontend</goal>
-                        <goal>build-frontend</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
-    </plugins>
+			<!-- Takes care of synchronizing java dependencies and imports in package.json 
+				and main.js files. It also creates webpack.config.js if does not exist yet. -->
+			<plugin>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-maven-plugin</artifactId>
+				<version>${vaadin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-frontend</goal>
+							<goal>build-frontend</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
 
 </project>
