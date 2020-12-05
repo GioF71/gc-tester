@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.giof71.demo</groupId>
 	<artifactId>sb-mem-usage-demo</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-RC-SNAPSHOT</version>
 	<name>sb-mem-usage-demo</name>
 	<description>sb-mem-usage-demo</description>
 
