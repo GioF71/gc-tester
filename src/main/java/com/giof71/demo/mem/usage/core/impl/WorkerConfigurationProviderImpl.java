@@ -46,5 +46,4 @@ public class WorkerConfigurationProviderImpl implements WorkerConfigurationProvi
 			}
 		};
 	}
-
 }
