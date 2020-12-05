@@ -9,7 +9,7 @@
 		<version>2.4.0</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>eu.sia.demo</groupId>
+	<groupId>com.giof71.demo</groupId>
 	<artifactId>sb-mem-usage-demo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>sb-mem-usage-demo</name>
