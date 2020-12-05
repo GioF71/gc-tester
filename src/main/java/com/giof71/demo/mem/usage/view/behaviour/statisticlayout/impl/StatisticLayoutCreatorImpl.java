@@ -55,10 +55,23 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.CREATION_TIME, creationTimeTransformer));
 		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.OLDEST_AGE, oldestAgeTransformer));
 		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.CNT, countTransformer));
+		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.SPEED, speedTransformer));
 		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.AVG, floatTransformer(StatisticField.AVG.name(), PerformanceStatistic::getElapsedAvg)));
 		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.MAX, floatTransformer(StatisticField.MAX.name(), PerformanceStatistic::getElapsedMax)));
 		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.MIN, floatTransformer(StatisticField.MIN.name(), PerformanceStatistic::getElapsedMin)));
 	}
+	
+	private final Transformer speedTransformer = new Transformer() {
+
+		@Override
+		public void accept(PerformanceStatistic m, ControlContainer c) {
+			c.setValue(StatisticField.SPEED.name(), Optional.ofNullable(m)
+				.filter(x -> x.getCount() > 0)
+				.map(x -> (float) x.getCount() / (float) ((x.getNewestNanoTime() - x.getOldestNanoTime()) / (1000000000.0f)))
+				.map(x -> String.format("%.3f op/sec", x))
+				.orElse("---"));
+		}
+	};
 	
 	private final Transformer creationTimeTransformer = new Transformer() {
 		
