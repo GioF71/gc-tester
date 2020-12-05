@@ -11,13 +11,15 @@
 	</parent>
 	<groupId>com.giof71.demo</groupId>
 	<artifactId>sb-mem-usage-demo</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>sb-mem-usage-demo</name>
 	<description>sb-mem-usage-demo</description>
 
 	<properties>
 		<java.version>8</java.version>
 		<vaadin.version>14.4.3</vaadin.version>
+		<vaadin.productionMode>true</vaadin.productionMode>
+		<vaadin.compatibilityMode>false</vaadin.compatibilityMode>
 	</properties>
 
 	<repositories>
@@ -68,9 +70,28 @@
 
 	<build>
 		<plugins>
+			<!-- The Spring Boot Maven plugin for easy execution from CLI and packaging -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<artifactId>
+                spring-boot-maven-plugin
+            </artifactId>
+			</plugin>
+
+			<!-- Takes care of synchronizing java dependencies and imports in package.json 
+				and main.js files. It also creates webpack.config.js if does not exist yet. -->
+			<plugin>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-maven-plugin</artifactId>
+				<version>${vaadin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-frontend</goal>
+							<goal>build-frontend</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

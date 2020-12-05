@@ -8,6 +8,7 @@ import com.giof71.demo.mem.usage.core.worker.Worker;
 public class WorkerImpl implements Worker {
 
 	private final WorkerConfiguration workerConfiguration;
+	private Boolean requestStop = Boolean.FALSE; 
 	private final PerformanceMetricConsumer performanceMetricConsumer = new PerformanceMetricConsumer() {
 
 		@Override
@@ -25,7 +26,8 @@ public class WorkerImpl implements Worker {
 
 	@Override
 	public void run() {
-		while (true) {
+		boolean goOn = true;
+		while (goOn) {
 			action();
 			try {
 				if (workerConfiguration.sleepTimeMillisec() > 0) {
@@ -35,6 +37,16 @@ public class WorkerImpl implements Worker {
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
+			synchronized(this) {
+				goOn = !requestStop;
+			}
+		}
+	}
+
+	@Override
+	public void stop() {
+		synchronized(this) {
+			this.requestStop = Boolean.TRUE;
 		}
 	}
 

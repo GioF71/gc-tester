@@ -3,6 +3,14 @@ package com.giof71.demo.mem.usage.view.behaviour.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.giof71.demo.mem.usage.core.Collector;
+import com.giof71.demo.mem.usage.core.WorkerConfiguration;
+import com.giof71.demo.mem.usage.core.WorkerConfigurationProvider;
+import com.giof71.demo.mem.usage.core.WorkerManager;
+import com.giof71.demo.mem.usage.util.TextToPositiveIntegerOrZero;
+import com.giof71.demo.mem.usage.view.Refreshable;
+import com.giof71.demo.mem.usage.view.RefreshableComponent;
+import com.giof71.demo.mem.usage.view.behaviour.WorkerCreationLayoutCreator;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
@@ -11,19 +19,14 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 
-import com.giof71.demo.mem.usage.core.WorkerConfiguration;
-import com.giof71.demo.mem.usage.core.WorkerConfigurationProvider;
-import com.giof71.demo.mem.usage.core.WorkerManager;
-import com.giof71.demo.mem.usage.util.TextToPositiveIntegerOrZero;
-import com.giof71.demo.mem.usage.view.Refreshable;
-import com.giof71.demo.mem.usage.view.RefreshableComponent;
-import com.giof71.demo.mem.usage.view.behaviour.WorkerCreationLayoutCreator;
-
 @Component
 public class WorkerCreationLayoutCreatorImpl implements WorkerCreationLayoutCreator {
 
 	@Autowired 
 	private WorkerManager workerManager;
+	
+	@Autowired
+	private Collector collector;
 	
 	@Autowired
 	private WorkerConfigurationProvider workerConfigurationProvider;
@@ -41,8 +44,8 @@ public class WorkerCreationLayoutCreatorImpl implements WorkerCreationLayoutCrea
 		pauseMillisec.setValue("10");
 		workerLayout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
 		layout.add(workerLayout);
-		Button btn = new Button("Create workers");
-		btn.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
+		Button createWorkers = new Button("Create workers");
+		createWorkers.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
 			
 			private static final long serialVersionUID = -2039028744374624585L;
 
@@ -56,7 +59,11 @@ public class WorkerCreationLayoutCreatorImpl implements WorkerCreationLayoutCrea
 				}
 			}
 		});
-		workerLayout.add(howMany, pauseMillisec, btn);
+		Button removeAllWorkers = new Button("Remove all workers");
+		removeAllWorkers.addClickListener(event -> workerManager.reset());
+		Button purgeStatistics = new Button("Purge statistics");
+		purgeStatistics.addClickListener(event -> collector.purgeAll());
+		workerLayout.add(howMany, pauseMillisec, createWorkers, removeAllWorkers, purgeStatistics);
 		HorizontalLayout currentStatusLayout = new HorizontalLayout();
 		currentStatusLayout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
 		TextField currentWorkers = new TextField("Current Workers");
