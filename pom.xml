@@ -18,7 +18,7 @@
 	<properties>
 		<java.version>8</java.version>
 		<vaadin.version>14.4.3</vaadin.version>
-		<vaadin.productionMode>false</vaadin.productionMode>
+		<vaadin.productionMode>true</vaadin.productionMode>
 		<vaadin.compatibilityMode>false</vaadin.compatibilityMode>
 	</properties>
 
@@ -69,31 +69,36 @@
 	</dependencyManagement>
 
 	<build>
-		<plugins>
-			<plugin>
-				<groupId>com.vaadin</groupId>
-				<artifactId>vaadin-maven-plugin</artifactId>
-				<version>${vaadin.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>prepare-frontend</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<configuration>
-							<mainClass>com.giof71.demo.mem.usage.SbMemUsageDemoApplication</mainClass>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
+    <plugins>
+        <!-- The Spring Boot Maven plugin for easy
+             execution from CLI and packaging -->
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>
+                spring-boot-maven-plugin
+            </artifactId>
+        </plugin>
+
+        <!--
+            Takes care of synchronizing java
+            dependencies and imports in package.json and
+            main.js files. It also creates
+            webpack.config.js if does not exist yet.
+        -->
+        <plugin>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-maven-plugin</artifactId>
+            <version>${vaadin.version}</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>prepare-frontend</goal>
+                        <goal>build-frontend</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
 	</build>
 
 </project>
