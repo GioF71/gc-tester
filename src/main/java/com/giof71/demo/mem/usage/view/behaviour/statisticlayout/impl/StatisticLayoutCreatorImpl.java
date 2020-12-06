@@ -66,7 +66,9 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 		@Override
 		public void accept(PerformanceStatistic m, ControlContainer c) {
 			c.setValue(StatisticField.SPEED.name(), Optional.ofNullable(m)
-				.filter(x -> x.getCount() > 0)
+				.filter(x -> x.getCount() != null && x.getCount() > 0)
+				.filter(x -> x.getNewestNanoTime() != null)
+				.filter(x -> x.getOldestNanoTime() != null)
 				.map(x -> (float) x.getCount() / (float) ((x.getNewestNanoTime() - x.getOldestNanoTime()) / (1000000000.0f)))
 				.map(x -> String.format("%.3f op/sec", x))
 				.orElse("---"));
