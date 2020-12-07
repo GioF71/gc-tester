@@ -51,56 +51,96 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 		for (RequestedStatistic current : requestedStatistics) {
 			displayBuffer.requestStatistic(current.getName(), current.getDelta(), current.getTimeUnit());
 		}
-		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.NAME, (m, c) -> {}));
-		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.CREATION_TIME, creationTimeTransformer));
-		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.NEWEST_AGE, newestAgeTransformer));
-		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.CNT, countTransformer));
-		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.SPEED, speedTransformer));
-		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.AVG, floatTransformer(StatisticField.AVG.name(), PerformanceStatistic::getElapsedAvg)));
-		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.MAX, floatTransformer(StatisticField.MAX.name(), PerformanceStatistic::getElapsedMax)));
-		statisticFieldMappingList.add(new StatisticFieldMapping(StatisticField.MIN, floatTransformer(StatisticField.MIN.name(), PerformanceStatistic::getElapsedMin)));
+		statisticFieldMappingList.add(new StatisticFieldMapping(
+			StatisticField.NAME, 
+			(p, c) -> {}));
+		statisticFieldMappingList.add(new StatisticFieldMapping(
+			StatisticField.CREATION_TIME, 
+			creationTimeTransformer));
+		statisticFieldMappingList.add(new StatisticFieldMapping(
+			StatisticField.OLDEST_AGE, 
+			createAgeTransformer(
+				StatisticField.OLDEST_AGE, 
+				PerformanceStatistic::getOldestNanoTime)));
+		statisticFieldMappingList.add(new StatisticFieldMapping(
+			StatisticField.NEWEST_AGE, 
+			createAgeTransformer(
+				StatisticField.NEWEST_AGE, 
+				PerformanceStatistic::getNewestNanoTime)));
+		statisticFieldMappingList.add(new StatisticFieldMapping(
+			StatisticField.CNT, 
+			countTransformer));
+		statisticFieldMappingList.add(new StatisticFieldMapping(
+			StatisticField.SPEED, 
+			speedTransformer));
+		statisticFieldMappingList.add(new StatisticFieldMapping(
+			StatisticField.AVG, 
+			floatTransformer(
+				StatisticField.AVG.name(), 
+				PerformanceStatistic::getElapsedAvg)));
+		statisticFieldMappingList.add(new StatisticFieldMapping(
+			StatisticField.MAX, 
+			floatTransformer(
+				StatisticField.MAX.name(), 
+				PerformanceStatistic::getElapsedMax)));
+		statisticFieldMappingList.add(new StatisticFieldMapping(
+			StatisticField.MIN, 
+			floatTransformer(
+				StatisticField.MIN.name(), 
+				PerformanceStatistic::getElapsedMin)));
 	}
 	
 	private final Transformer speedTransformer = new Transformer() {
 
 		@Override
-		public void accept(PerformanceStatistic m, ControlContainer c) {
-			c.setValue(StatisticField.SPEED.name(), Optional.ofNullable(m)
-				.filter(x -> x.getCount() != null && x.getCount() > 0)
-				.filter(x -> x.getNewestNanoTime() != null)
-				.filter(x -> x.getOldestNanoTime() != null)
-				.map(x -> (float) x.getCount() / (float) ((x.getNewestNanoTime() - x.getOldestNanoTime()) / (1000000000.0f)))
-				.map(x -> String.format("%.3f op/sec", x))
-				.orElse("---"));
+		public void accept(PerformanceStatistic performanceStatistic, ControlContainer controlContainer) {
+			controlContainer.setValue(
+				StatisticField.SPEED.name(), 
+				Optional.ofNullable(performanceStatistic)
+					.filter(x -> x.getCount() != null && x.getCount() > 0)
+					.filter(x -> x.getNewestNanoTime() != null)
+					.filter(x -> x.getOldestNanoTime() != null)
+					.map(x -> (float) x.getCount() / (float) ((x.getNewestNanoTime() - x.getOldestNanoTime()) / (1000000000.0f)))
+					.map(x -> String.format("%.3f op/sec", x))
+					.orElse("---"));
 		}
 	};
 	
 	private final Transformer creationTimeTransformer = new Transformer() {
 		
 		@Override
-		public void accept(PerformanceStatistic m, ControlContainer c) {
-			c.setValue(StatisticField.CREATION_TIME.name(), Optional.ofNullable(m).filter(x -> x.getCount() > 0).map(PerformanceStatistic::creationTimeStamp).map(timeUtil.getToTimeStampFunction()).orElse("---"));
+		public void accept(PerformanceStatistic performanceStatistic, ControlContainer controlContainer) {
+			controlContainer.setValue(StatisticField.CREATION_TIME.name(), Optional.ofNullable(performanceStatistic).filter(x -> x.getCount() > 0).map(PerformanceStatistic::creationTimeStamp).map(timeUtil.getToTimeStampFunction()).orElse("---"));
 		}
 	}; 
-
-	private final Transformer newestAgeTransformer = new Transformer() {
-		
-		@Override
-		public void accept(PerformanceStatistic m, ControlContainer c) {
-			c.setValue(StatisticField.NEWEST_AGE.name(), Optional.ofNullable(m).map(PerformanceStatistic::getNewestNanoTime).filter(o -> o >= 0).map(o -> System.nanoTime() - o).map(o -> String.format("%.3f msec ago", (float) o / (1000000.0f))).orElse("---"));
-		}
-	}; 
+	
+	private final Transformer createAgeTransformer(StatisticField statisticField, Function<PerformanceStatistic, Long> ageExtractor) {
+		return new Transformer() {
+			
+			@Override
+			public void accept(PerformanceStatistic performanceStatistic, ControlContainer controlContainer) {
+				controlContainer.setValue(
+					statisticField.name(), 
+					Optional.ofNullable(performanceStatistic)
+						.map(ageExtractor)
+						.filter(o -> o >= 0)
+						.map(o -> System.nanoTime() - o)
+						.map(o -> String.format("%.3f msec ago", (float) o / (1000000.0f)))
+						.orElse("---"));
+			}
+		};
+	}
 	
 	private final Transformer countTransformer = new Transformer() {
 		
 		@Override
-		public void accept(PerformanceStatistic m, ControlContainer c) {
-			c.setValue(StatisticField.CNT.name(), Optional.ofNullable(m).map(PerformanceStatistic::getCount).map(i -> Integer.valueOf(i).toString()).orElse("---"));
+		public void accept(PerformanceStatistic performanceStatistic, ControlContainer controlContainer) {
+			controlContainer.setValue(StatisticField.CNT.name(), Optional.ofNullable(performanceStatistic).map(PerformanceStatistic::getCount).map(i -> Integer.valueOf(i).toString()).orElse("---"));
 		}
 	}; 
 	
 	private Transformer floatTransformer(String name, Function<PerformanceStatistic, Float> floatExtractor) {
-		return (m, c) -> updateValue(c, name, m, floatExtractor);
+		return (p, c) -> updateValue(c, name, p, floatExtractor);
 	}
 	
 	@Override
