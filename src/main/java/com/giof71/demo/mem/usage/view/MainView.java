@@ -13,6 +13,7 @@ import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import com.giof71.demo.mem.usage.view.behaviour.CacheSizeLayoutCreator;
@@ -20,6 +21,7 @@ import com.giof71.demo.mem.usage.view.behaviour.KeyAddLayoutCreator;
 import com.giof71.demo.mem.usage.view.behaviour.StatisticLayoutCreator;
 import com.giof71.demo.mem.usage.view.behaviour.WorkerCreationLayoutCreator;
 
+@PageTitle("GC Tester")
 @Route
 public class MainView extends VerticalLayout {
 
