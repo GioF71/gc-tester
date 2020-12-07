@@ -4,5 +4,5 @@ import com.giof71.demo.mem.usage.core.PerformanceStatistic;
 
 @FunctionalInterface
 interface Transformer {
-	void accept(PerformanceStatistic p, ControlContainer c);
+	void accept(PerformanceStatistic performanceStatistic, ControlContainer controlContainer);
 }
