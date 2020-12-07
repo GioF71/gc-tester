@@ -1,5 +1,6 @@
 package com.giof71.demo.mem.usage.core.statistic.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
@@ -27,12 +28,14 @@ public class PerformanceMetricExtractorImpl implements PerformanceMetricExtracto
 		Long oldestNanoTime = null;
 		Long newestNanoTime = null;
 		boolean keepAdding = true;
+		List<Float> values = new ArrayList<>();
 		for (int i = metricEntryList.size() - 1; keepAdding && i >= 0; --i) {
 			MetricEntry e = metricEntryList.get(i);
 			keepAdding = e.getCreationNanotime() >= lowest;
 			if (keepAdding) {
 				++count;
 				Float currentElapsed = e.getElapsed();
+				values.add(currentElapsed);
 				totalElapsed += currentElapsed;
 				min = update(min, currentElapsed, (c, n) -> n < c);
 				max = update(max, currentElapsed, (c, n) -> n > c);
@@ -46,12 +49,18 @@ public class PerformanceMetricExtractorImpl implements PerformanceMetricExtracto
 			}
 		}
 		avg = count > 0 ? totalElapsed / count : null;
-		//return new LocalPerformanceStatistic(timeDelta, timeUnit, count, min, max, avg, oldestNanoTime, newestNanoTime);
+		// std dev
+		float numerator = 0.0f;
+		for (Float currentValue : values) {
+			numerator += Math.pow((currentValue - avg), 2);
+		}
+		Double stdDev = Math.sqrt(numerator / ((float) values.size()));
 		return LocalPerformanceStatistic.builder(timeDelta, timeUnit)
 			.count(count)
 			.elapsedAvg(avg)
 			.elapsedMax(max)
 			.elapsedMin(min)
+			.elapsedStdDev(stdDev)
 			.oldestNanoTime(oldestNanoTime)
 			.newestNanoTime(newestNanoTime)
 			.build();

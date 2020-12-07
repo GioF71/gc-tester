@@ -75,19 +75,28 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 			speedTransformer));
 		statisticFieldMappingList.add(new StatisticFieldMapping(
 			StatisticField.AVG, 
-			floatTransformer(
+			createNumberTransformer(
 				StatisticField.AVG.name(), 
-				PerformanceStatistic::getElapsedAvg)));
+				PerformanceStatistic::getElapsedAvg,
+				floatNumericFunction)));
+		statisticFieldMappingList.add(new StatisticFieldMapping(
+			StatisticField.STD_DEV, 
+			createNumberTransformer(
+				StatisticField.STD_DEV.name(), 
+				PerformanceStatistic::getStandardDeviation, 
+				doubleNumericFunction)));
 		statisticFieldMappingList.add(new StatisticFieldMapping(
 			StatisticField.MAX, 
-			floatTransformer(
+			createNumberTransformer(
 				StatisticField.MAX.name(), 
-				PerformanceStatistic::getElapsedMax)));
+				PerformanceStatistic::getElapsedMax,
+				floatNumericFunction)));
 		statisticFieldMappingList.add(new StatisticFieldMapping(
 			StatisticField.MIN, 
-			floatTransformer(
+			createNumberTransformer(
 				StatisticField.MIN.name(), 
-				PerformanceStatistic::getElapsedMin)));
+				PerformanceStatistic::getElapsedMin,
+				floatNumericFunction)));
 	}
 	
 	private final Transformer speedTransformer = new Transformer() {
@@ -139,8 +148,17 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 		}
 	}; 
 	
-	private Transformer floatTransformer(String name, Function<PerformanceStatistic, Float> floatExtractor) {
-		return (p, c) -> updateValue(c, name, p, floatExtractor);
+	private <NumberType> Transformer createNumberTransformer(
+			String name, 
+			Function<PerformanceStatistic, NumberType> numberExtractor,
+			BiFunction<PerformanceStatistic, Function<PerformanceStatistic, NumberType>, String> numberToStringConverter) {
+		return new Transformer() {
+			
+			@Override
+			public void accept(PerformanceStatistic performanceStatistic, ControlContainer controlContainer) {
+				updateValue(controlContainer, name, performanceStatistic, numberExtractor, numberToStringConverter);
+			}
+		};
 	}
 	
 	@Override
@@ -202,7 +220,18 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 		return controls;
 	}
 	
-	private final BiFunction<PerformanceStatistic, Function<PerformanceStatistic, Float>, String> floatFormatFunction = new BiFunction<PerformanceStatistic, Function<PerformanceStatistic, Float>, String>() {
+	private final BiFunction<PerformanceStatistic, Function<PerformanceStatistic, Double>, String> doubleNumericFunction = new BiFunction<PerformanceStatistic, Function<PerformanceStatistic, Double>, String>() {
+
+		@Override
+		public String apply(PerformanceStatistic performanceMetric, Function<PerformanceStatistic, Double> f) {
+			return Optional.ofNullable(performanceMetric)
+				.map(f)
+				.map(doubleToString)
+				.orElse("---");
+		}
+	};
+	
+	private final BiFunction<PerformanceStatistic, Function<PerformanceStatistic, Float>, String> floatNumericFunction = new BiFunction<PerformanceStatistic, Function<PerformanceStatistic, Float>, String>() {
 
 		@Override
 		public String apply(PerformanceStatistic performanceMetric, Function<PerformanceStatistic, Float> f) {
@@ -222,16 +251,27 @@ public class StatisticLayoutCreatorImpl implements StatisticLayoutCreator {
 				.orElse(null);
 		}
 	};
-	
-	private void updateValue(
+
+	private final Function<Double, String> doubleToString = new Function<Double, String>() {
+
+		@Override
+		public String apply(Double f) {
+			return Optional.ofNullable(f)
+				.map(x -> String.format("%.3f", x))
+				.orElse(null);
+		}
+	};
+
+	private <NumberType> void updateValue(
 			ControlContainer controlContainer,
 			String name, 
 			PerformanceStatistic metric, 
-			Function<PerformanceStatistic, Float> metricExtractor) {
-		String valueAsString = floatFormatFunction.apply(metric, metricExtractor);
+			Function<PerformanceStatistic, NumberType> metricExtractor,
+			BiFunction<PerformanceStatistic, Function<PerformanceStatistic, NumberType>, String> numberToString) {
+		String valueAsString = numberToString.apply(metric, metricExtractor);
 		controlContainer.setValue(name, valueAsString);
 	}
-
+	
 	private void refreshStats(ControlContainer c, Function<DisplayBuffer, PerformanceStatistic> statisticRetriever) {
 		PerformanceStatistic metric = statisticRetriever.apply(displayBuffer);
 		c.changeReadOnly(false);
