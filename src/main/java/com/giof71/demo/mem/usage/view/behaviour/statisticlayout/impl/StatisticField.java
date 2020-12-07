@@ -7,10 +7,11 @@ enum StatisticField {
 	OLDEST_AGE("Oldest Item Age"),
 	NEWEST_AGE("Newest Item Age"),
 	CNT("Count"),
-	AVG("Avg"),
 	SPEED("Speed"),
+	AVG("Avg"),
 	MAX("Max"),
-	MIN("Min");
+	MIN("Min"),
+	STD_DEV("Standard Deviation");
 	
 	private String caption;
 	private boolean processReadOnly;

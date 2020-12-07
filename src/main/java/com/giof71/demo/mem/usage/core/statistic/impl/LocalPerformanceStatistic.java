@@ -14,6 +14,7 @@ class LocalPerformanceStatistic implements PerformanceStatistic {
 	private final Float elapsedMin;
 	private final Float elapsedMax;
 	private final Float elapsedAvg;
+	private final Double elapsedStdDev;
 	private final Long oldestNanoTime;
 	private final Long newestNanoTime;
 	
@@ -25,22 +26,9 @@ class LocalPerformanceStatistic implements PerformanceStatistic {
 		this.elapsedAvg = builder.elapsedAvg;
 		this.elapsedMax = builder.elapsedMax;
 		this.elapsedMin = builder.elapsedMin;
+		this.elapsedStdDev = builder.elapsedStdDev;
 		this.oldestNanoTime = builder.oldestNanoTime;
 		this.newestNanoTime = builder.newestNanoTime;
-	}
-
-	@Deprecated
-	LocalPerformanceStatistic(long timeDelta, TimeUnit timeUnit, int count, Float elapsedMin, Float elapsedMax,
-			Float elapsedAvg, Long oldestNanoTime, Long newestNanoTime) {
-		this.creationTimeStamp = Calendar.getInstance();
-		this.timeDelta = timeDelta;
-		this.timeUnit = timeUnit;
-		this.count = count;
-		this.elapsedMin = elapsedMin;
-		this.elapsedMax = elapsedMax;
-		this.elapsedAvg = elapsedAvg;
-		this.oldestNanoTime = oldestNanoTime;
-		this.newestNanoTime = newestNanoTime;
 	}
 
 	@Override
@@ -79,6 +67,11 @@ class LocalPerformanceStatistic implements PerformanceStatistic {
 	}
 
 	@Override
+	public Double getStandardDeviation() {
+		return elapsedStdDev;
+	}
+
+	@Override
 	public Long getOldestNanoTime() {
 		return oldestNanoTime;
 	}
@@ -101,6 +94,7 @@ class LocalPerformanceStatistic implements PerformanceStatistic {
 		private Float elapsedMin;
 		private Float elapsedMax;
 		private Float elapsedAvg;
+		private Double elapsedStdDev;
 		private Long oldestNanoTime;
 		private Long newestNanoTime;
 		
@@ -126,6 +120,11 @@ class LocalPerformanceStatistic implements PerformanceStatistic {
 
 		Builder elapsedAvg(Float value) {
 			this.elapsedAvg = value;
+			return this;
+		}
+
+		Builder elapsedStdDev(Double value) {
+			this.elapsedStdDev = value;
 			return this;
 		}
 

@@ -13,4 +13,5 @@ public interface PerformanceStatistic {
 	Float getElapsedMin();
 	Float getElapsedMax();
 	Float getElapsedAvg();
+	Double getStandardDeviation();
 }
