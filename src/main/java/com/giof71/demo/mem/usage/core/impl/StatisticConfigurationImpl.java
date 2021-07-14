@@ -22,8 +22,6 @@ public class StatisticConfigurationImpl implements StatisticConfiguration {
 		requestedStatistics.add(buildRequestedStatistic("OneSec", 1, TimeUnit.SECONDS));
 		requestedStatistics.add(buildRequestedStatistic("FiveSec", 5, TimeUnit.SECONDS));
 		requestedStatistics.add(buildRequestedStatistic("OneMinute", 1, TimeUnit.MINUTES));
-		requestedStatistics.add(buildRequestedStatistic("TenMinute", 10, TimeUnit.MINUTES));
-		requestedStatistics.add(buildRequestedStatistic("OneHour", 1, TimeUnit.HOURS));
 	}
 
 	@Override
